@@ -1,0 +1,39 @@
+volumes:
+  dbdata:
+  cwfm:
+
+services:
+  webserver:
+    build: webcontent
+    container_name: CWFM_server
+    ports:
+      - 80:80
+    volumes:
+      - cwfm:/var/www/html
+      - ./webcontent/php-ini.ini/:/usr/local/etc/php/conf.d/php-ini.ini
+  
+  transferserver:
+    image: ghcr.io/linuxserver/openssh-server
+    container_name: CWFM_transfer
+    environment:
+      - PASSWORD_ACCESS=true
+      - USER_PASSWORD=P@ssw0rd
+      - USER_NAME=cwfm_admin
+      - PUID=1000
+      - PGID=33
+    ports:
+      - 22:2222
+    volumes:
+      - cwfm:/var/www/html
+  
+  database:
+    image: mariadb:latest
+    container_name: CWFM_db
+    ports:
+      - 3306:3306
+    environment:
+      - MYSQL_USER=cwfm_admin
+      - MYSQL_PASSWORD=P@ssw0rd
+      - MYSQL_ROOT_PASSWORD=P@ssw0rd
+    volumes:
+      - dbdata:/var/lib/mysql
