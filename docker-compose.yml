@@ -11,6 +11,14 @@ services:
     volumes:
       - cwfm:/var/www/html
       - ./webcontent/php-ini.ini/:/usr/local/etc/php/conf.d/php-ini.ini
+    depends_on:
+      - database
+    profiles:
+      - prod
+      - test
+    networks:
+      - web
+    restart: on-failure:5 
   
   transferserver:
     image: ghcr.io/linuxserver/openssh-server
@@ -25,6 +33,13 @@ services:
       - 22:2222
     volumes:
       - cwfm:/var/www/html
+    depends_on:
+      - webserver
+    profiles:
+      - test
+    networks:
+      - web
+    restart: on-failure:5 
   
   database:
     image: mariadb:latest
@@ -37,3 +52,14 @@ services:
       - MYSQL_ROOT_PASSWORD=P@ssw0rd
     volumes:
       - dbdata:/var/lib/mysql
+    profiles:
+      - prod
+      - test
+    networks:
+      - web
+    restart: on-failure:5 
+
+networks:
+  web:
+    driver: bridge
+    attachable: false
