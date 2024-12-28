@@ -18,7 +18,7 @@ services:
       - test
     networks:
       - web
-    restart: on-failure:5 
+    restart: on-failure:5
   
   transferserver:
     image: ghcr.io/linuxserver/openssh-server
@@ -39,7 +39,7 @@ services:
       - test
     networks:
       - web
-    restart: on-failure:5 
+    restart: on-failure:5
   
   database:
     image: mariadb:latest
@@ -57,7 +57,7 @@ services:
       - test
     networks:
       - web
-    restart: on-failure:5 
+    restart: on-failure:5
 
 networks:
   web:
