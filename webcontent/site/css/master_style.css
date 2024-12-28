@@ -1,0 +1,261 @@
+/***********************************
+Bildschirm Ansicht
+***********************************/
+
+@media screen and (min-width: 0px) {
+
+    body {
+		display: block;
+		position: fixed;
+		margin: 0;
+		padding: 0;
+		height: 100%;
+		width: 100%;
+		background-color: rgba(0,0,0,0.2);
+		font-family: calibri;
+		font-size: 1rem;
+	}
+	
+	#wrapper {
+		display: block;
+		position: fixed;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+    #wrapper header {
+		display: flex;
+		position: fixed;
+		top: 0;
+		margin: 0;
+		padding: 0.5rem;
+		height: 3rem;
+		width: calc(100% - 1rem);
+		background-color: rgba(192,192,192,1);
+		box-shadow: 0rem 0rem 0.25rem rgba(0,0,0,1);
+		justify-content: center;
+		align-items: center;
+	}
+	
+	#wrapper main {
+		display: flex;
+		position: fixed;
+		top: 4rem;
+		margin: 0;
+		padding: 0;
+		border-radius: 0.15rem;
+		height: calc(100% - 7rem);
+		width: 100%;
+		background-color: rgba(192,192,192,1);
+	}
+	
+	#wrapper footer {
+		display: flex;
+		position: fixed;
+		bottom: 0;
+		margin: 0;
+		padding: 0.5rem;
+		height: 2rem;
+		width: calc(100% - 1rem);
+		background-color: rgba(192,192,192,1);
+		box-shadow: 0rem 0rem 0.25rem rgba(0,0,0,1);
+		justify-content: flex-start;
+		align-items: center;
+	}
+
+    .scroll-y {
+		overflow-y: auto;
+	}
+	
+	.scroll-x {
+		overflow-x: auto;
+	}
+	
+	.scroll-xy {
+		overflow: auto;
+	}
+	
+	.bold {
+		font-weight: bold;
+	}
+	
+	.normal {
+		font-weight: normal;
+	}
+	
+	.font-25 {
+		font-size: 0.25rem;
+	}
+	
+	.font-50 {
+		font-size: 0.5rem;
+	}
+	
+	.font-75 {
+		font-size: 0.75rem;
+	}
+	
+	.font-100 {
+		font-size: 1rem;
+	}
+	
+	.font-125 {
+		font-size: 1.25rem;
+	}
+	
+	.font-150 {
+		font-size: 1.5rem;
+	}
+	
+	.font-175 {
+		font-size: 1.75rem;
+	}
+	
+	.font-200 {
+		font-size: 2rem;
+	}
+	
+	.font-225 {
+		font-size: 2.25rem;
+	}
+	
+	.font-250 {
+		font-size: 2.5rem;
+	}
+	
+	.underline {
+		text-decoration: underline;
+	}
+	
+	.italic {
+		text-decoration: italic;
+	}
+	
+	.text-left {
+		text-align: left!important;
+	}
+	
+	.text-center {
+		text-align: center!important;
+	}
+	
+	.text-right {
+		text-align: right!important;
+	}
+	
+	.color-1 {
+		color: rgba(0,0,0,1);
+	}
+	
+	.color-2 {
+		color: rgba(255,255,255,1);
+	}
+	
+	.color-3 {
+		color: rgba(100,90,150,1);
+	}
+	
+	.color-4 {
+		color: rgba(37,150,43,1);
+	}
+	
+	.color-5 {
+		color: rgba(255,0,0,1);
+	}
+	
+	.color-6 {
+		color: rgba(100,160,200,1);
+	}
+	
+	.color-7 {
+		color: rgba(255,204,0,1);
+	}
+	
+	.color-8 {
+		color: rgba(0,255,59,1);
+	}
+	
+	.color-9 {
+		color: rgba(3,71,134,1);
+	}
+	
+	.block {
+		display: block;
+	}
+	
+	.none {
+		display: none;
+	}
+	
+	.inline-block {
+		display: inline-block;
+	}
+	
+	.absolute {
+		position: absolute;
+	}
+	
+	.fixed {
+		position: fixed;
+	}
+	
+	.relative {
+		position: realtive;
+	}
+	
+	.flex {
+		display: flex;
+	}
+	
+	.row-wrap {
+		flex-flow: row wrap;
+	}
+	
+	.justify-center {
+		justify-content: center;
+	}
+	
+	.justify-start {
+		justify-content: flex-start;
+	}
+	
+	.justify-end {
+		justify-content: flex-end;
+	}
+	
+	.align-items-center {
+		align-items: center;
+	}
+	
+	.align-items-start {
+		align-items: start;
+	}
+	
+	.align-items-end {
+		align-items: end;
+	}
+	
+	.tab-input::-webkit-input-placeholder {
+		color: rgba(255,255,255,1);
+	}
+	
+	.tab-input::-moz-placeholder {
+		color: rgba(255,255,255,1);
+	}
+	
+	::marker {
+		display: none;
+	}
+	
+	input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+		-webkit-appearance: none;
+		margin: 0;
+	}
+
+}
+
+/***********************************
+Bildschirm Ansicht ENDE
+***********************************/
