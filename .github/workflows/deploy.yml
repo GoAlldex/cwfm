@@ -1,0 +1,25 @@
+name: cwfm
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  main-test:
+    name: Run PHPUnit webcontent/tests/
+    runs-on: ubuntu-latest
+    container:
+      image: composer:latest
+      volumes:
+        - ${{ github.workspace }}:/test
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Running composer install
+        run: composer install
+      - name: Run profile
+        run: docker-compose --profile prod up -d
+      - name: Running phpunit
+        run: ./vendor/bin/phpunit tests

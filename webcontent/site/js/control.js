@@ -65,7 +65,7 @@ function load(msg) {
 	load_box.setAttribute("class", "load-box");
 	var load_img = document.createElement("img");
 	load_img.setAttribute("class", "load-circle");
-	load_img.setAttribute("src", "../../images/load.png");
+	load_img.setAttribute("src", "./images/load_1.png");
 	load_img.setAttribute("alt", "Lade");
 	var text_box = document.createElement("span");
 	text_box.setAttribute("id", "loadboxtext");
@@ -87,7 +87,7 @@ function save(msg) {
 	save_box.setAttribute("class", "save-box");
 	var save_img = document.createElement("img");
 	save_img.setAttribute("class", "save-anim");
-	save_img.setAttribute("src", "../../images/bestaetigt.png");
+	save_img.setAttribute("src", "./images/save_1.png");
 	save_img.setAttribute("alt", "Save");
 	var text_box = document.createElement("span");
 	text_box.setAttribute("id", "saveboxtext");
@@ -134,7 +134,7 @@ function manage_functions(function_name, data) {
 
 function main_backend_request(script, functions, data) {
 	$.ajax({
-		url: "../"+script+".php",
+		url: "./"+script+".php",
 		type: "POST",
 		data: data,
 		processData: false,
