@@ -11,6 +11,8 @@ services:
     volumes:
       - cwfm:/var/www/html
       - ./webcontent/php-ini.ini/:/usr/local/etc/php/conf.d/php-ini.ini
+    environment:
+      XDEBUG_CONFIG: remote_host=host.docker.internal
     depends_on:
       - database
     profiles:
@@ -42,16 +44,18 @@ services:
     restart: on-failure:5
   
   database:
-    image: mariadb:latest
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d
+      - dbdata:/var/lib/mysql
+    image: mysql:latest
     container_name: CWFM_db
     ports:
       - 3306:3306
     environment:
+      - DB_CONNECTION=mysql
       - MYSQL_USER=cwfm_admin
       - MYSQL_PASSWORD=P@ssw0rd
       - MYSQL_ROOT_PASSWORD=P@ssw0rd
-    volumes:
-      - dbdata:/var/lib/mysql
     profiles:
       - prod
       - test

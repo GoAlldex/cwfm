@@ -1,7 +1,7 @@
-var debug_mode = false;
+var debug_mode = true;
 
 function msg_off() {
-	var conf_box = document.getElementById("config-box");
+	var conf_box = document.getElementById("msg-box");
 	if(conf_box.classList.contains("flex")) {
 		conf_box.classList.remove("flex");
 		conf_box.innerHTML = "";
@@ -9,7 +9,7 @@ function msg_off() {
 };
 
 function msg_on(type, title, body, buttons, button_fu) {
-	var conf_box = document.getElementById("config-box");
+	var conf_box = document.getElementById("msg-box");
 	if(conf_box.classList.contains("flex")) {
 		msg_off();
 		msg_on(type, title, body, buttons, button_fu);
@@ -56,7 +56,7 @@ function check_JSON(JSON_parse) {
 };
 
 function load(msg) {
-	var conf_box = document.getElementById("config-box");
+	var conf_box = document.getElementById("msg-box");
 	if(conf_box.classList.contains("flex")) {
 		conf_box.classList.remove("flex");
 		conf_box.innerHTML = "";
@@ -77,7 +77,7 @@ function load(msg) {
 };
 
 function save(msg) {
-	var conf_box = document.getElementById("config-box");
+	var conf_box = document.getElementById("msg-box");
 	if(conf_box.classList.contains("flex")) {
 		msg_off();
 		save(msg);
@@ -87,7 +87,7 @@ function save(msg) {
 	save_box.setAttribute("class", "save-box");
 	var save_img = document.createElement("img");
 	save_img.setAttribute("class", "save-anim");
-	save_img.setAttribute("src", "./images/save_1.png");
+	save_img.setAttribute("src", "./images/check_1.png");
 	save_img.setAttribute("alt", "Save");
 	var text_box = document.createElement("span");
 	text_box.setAttribute("id", "saveboxtext");
@@ -228,4 +228,65 @@ function main_backend_request(script, functions, data) {
 			msg_on(type, title, body, buttons, button_fu);
 		}
 	});
+};
+
+function get_folders() {
+	load("Liste Verzeichnisse...");
+	data = new FormData();
+	data.append("get", 1);
+	fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "get_folders_success";
+	fu[0][1] = 0;
+	main_backend_request("./scripts/get_folders", fu, data);
+};
+
+function get_folders_success(data) {
+	var menue_box = document.getElementById("menue-content");
+	menue_box.innerHTML = "";
+	for(let i = 0; i < data.length; i++) {
+		var menue_content = document.createElement("div");
+		menue_content.setAttribute("class", "menue-content justify-start align-items-center");
+		var menue_text = document.createElement("div");
+		menue_text.setAttribute("class", "menue-content-text color-2 font-150 bold");
+		menue_text.innerText = data[i][1];
+		var menue_button = document.createElement("img");
+		menue_button.setAttribute("class", "menue-content-button");
+		menue_button.setAttribute("src", "./images/delete_1.png");
+		menue_content.appendChild(menue_text);
+		menue_content.appendChild(menue_button);
+		menue_box.appendChild(menue_content);
+	}
+	msg_off();
+};
+
+function new_master_folder() {
+	var type = "Error";
+	var title = "Neuer Ordner";
+	var body = '<label class="label-msg font-100">Ordnername:</label>';
+	body += '<input type="text" class="input-msg font-100" name="folder-name" placeholder="Ordnername..." title="Bitte geben Sie einen Ordnernamen ein" autocomplete="off">';
+	var buttons = Array();
+	buttons.push("Erstellen");
+	buttons.push("Abbrechen");
+	var button_fu = Array();
+	button_fu.push("save_new_master_folder()");
+	button_fu.push("msg_off()");
+	msg_on(type, title, body, buttons, button_fu);
+};
+
+function save_new_master_folder() {
+	var name = document.getElementsByName("folder-name")[0].value;
+	data = new FormData();
+	data.append("save", 1);
+	data.append("name", name);
+	fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "save_new_master_folder_success";
+	fu[0][1] = 0;
+	main_backend_request("./scripts/save_master_folder", fu, data);
+};
+
+function save_new_master_folder_success() {
+	save("Neuer Ordner erfolgreich gespeichert");
+	setTimeout(function () { get_folders(); }, 3000);
 };
