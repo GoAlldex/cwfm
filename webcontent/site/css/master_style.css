@@ -46,7 +46,6 @@ Bildschirm Ansicht
 		top: 4rem;
 		margin: 0;
 		padding: 0;
-		border-radius: 0.15rem;
 		height: calc(100% - 7rem);
 		width: 100%;
 		background-color: rgba(192,192,192,1);
@@ -325,10 +324,15 @@ Bildschirm Ansicht
 		height: 2rem;
 		border-radius: 0.15rem;
 		background-color: rgba(192,192,192,1);
+		transition: .5s all;
+		transition-delay: 100ms;
+		transition-timing-function: ease-in-out;
 	}
 
 	.menue-content-active {
+		color: rgba(255,255,255,1);
 		background-color: rgba(37,150,43,1);
+		transition-delay: 0s;
 	}
 
 	.menue-content-text {
@@ -373,6 +377,12 @@ Bildschirm Ansicht
 		padding: 0;
 		width: calc(100% - 25rem);
 		height: 100%;
+	}
+
+	.highlight {
+		height: calc(100% - 7.5rem)!important;
+		width: calc(100% - 0.5rem)!important;
+		border: 0.25rem dashed rgba(37,150,43,1);
 	}
 
     .scroll-y {

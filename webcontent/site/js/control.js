@@ -1,4 +1,10 @@
 var debug_mode = true;
+var selected_master_folder = null;
+var drop = document.getElementsByTagName("body")[0];
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { drop.addEventListener(eventName, preventDefaults, false); });
+['dragenter', 'dragover'].forEach(eventName => { drop.addEventListener(eventName, highlight, false); });
+['dragleave', 'drop'].forEach(eventName => { drop.addEventListener(eventName, unhighlight, false); });
+drop.addEventListener('drop', upload_files, false);
 
 function msg_off() {
 	var conf_box = document.getElementById("msg-box");
@@ -230,18 +236,19 @@ function main_backend_request(script, functions, data) {
 	});
 };
 
-function get_master_folders() {
+function get_master_folders(mode) {
 	load("Liste Verzeichnisse...");
 	var data = new FormData();
 	data.append("get", 1);
 	var fu = Array();
 	fu[0] = Array();
 	fu[0][0] = "get_master_folders_success";
-	fu[0][1] = 0;
+	fu[0][1] = 1;
+	fu[0][2] = mode;
 	main_backend_request("./scripts/get_master_folders", fu, data);
 };
 
-function get_master_folders_success(data) {
+function get_master_folders_success(mode, data) {
 	var menue_box = document.getElementById("menue-content");
 	menue_box.innerHTML = "";
 	for(let i = 0; i < data.length; i++) {
@@ -251,13 +258,13 @@ function get_master_folders_success(data) {
 		var menue_text = document.createElement("div");
 		menue_text.setAttribute("class", "menue-content-text color-10 font-150 bold");
 		menue_text.setAttribute("title", data[i][1]);
-		menue_text.setAttribute("onclick", "");
+		menue_text.setAttribute("onclick", "select_master_folder("+data[i][0]+")");
 		menue_text.innerText = data[i][1];
 		var menue_edit = document.createElement("img");
 		menue_edit.setAttribute("class", "menue-content-button");
 		menue_edit.setAttribute("src", "./images/edit_1.png");
 		menue_edit.setAttribute("title", "Hauptordner "+data[i][1]+" bearbeiten");
-		menue_edit.setAttribute("onclick", "("+data[i][0]+")");
+		menue_edit.setAttribute("onclick", "ask_edit_master_folder("+data[i][0]+")");
 		var menue_remove = document.createElement("img");
 		menue_remove.setAttribute("class", "menue-content-button bg-red");
 		menue_remove.setAttribute("src", "./images/delete_1.png");
@@ -267,6 +274,10 @@ function get_master_folders_success(data) {
 		menue_content.appendChild(menue_edit);
 		menue_content.appendChild(menue_remove);
 		menue_box.appendChild(menue_content);
+		if(mode != 0 && window.selected_master_folder == data[i][0]) {
+			menue_content.classList.add("menue-content-active");
+			menue_text.classList.remove("color-10");
+		}
 	}
 	msg_off();
 };
@@ -299,7 +310,40 @@ function save_master_folder() {
 
 function save_master_folder_success() {
 	save("Neuer Ordner erfolgreich gespeichert");
-	setTimeout(function () { get_master_folders(); }, 3000);
+	setTimeout(function () { get_master_folders(1); }, 3000);
+};
+
+function ask_edit_master_folder(id) {
+	var folder_name = document.getElementById("master-folder-"+id).childNodes[0].innerText;
+	var type = "Error";
+	var title = "Ordner umbenennen";
+	var body = '<label class="label-msg font-100">Neuer Ordnername:</label>';
+	body += '<input type="text" class="input-msg font-100" name="folder-name" placeholder="Ordnername..." title="Bitte geben Sie einen Ordnernamen ein" autocomplete="off" value="'+folder_name+'">';
+	var buttons = Array();
+	buttons.push("Speichern");
+	buttons.push("Abbrechen");
+	var button_fu = Array();
+	button_fu.push("edit_master_folder("+id+")");
+	button_fu.push("msg_off()");
+	msg_on(type, title, body, buttons, button_fu);
+};
+
+function edit_master_folder(id) {
+	var name = document.getElementsByName("folder-name")[0].value;
+	var data = new FormData();
+	data.append("save", 1);
+	data.append("id", id);
+	data.append("name", name);
+	var fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "edit_master_folder_success";
+	fu[0][1] = 0;
+	main_backend_request("./scripts/edit_master_folder", fu, data);
+};
+
+function edit_master_folder_success() {
+	save("Neuer Ordnername erfolgreich gespeichert");
+	setTimeout(function () { get_master_folders(1); }, 3000);
 };
 
 function ask_remove_master_folder(id) {
@@ -333,5 +377,45 @@ function remove_master_folder_success(id, data) {
 	save("Hauptverzeichnis "+data[0]+" mit "+data[1]+" Datein vollständig entfernt");
 	var rm = document.getElementById("master-folder-"+id);
 	rm.parentElement.removeChild(rm);
+	if(window.selected_master_folder != null && window.selected_master_folder == parseInt(id)) {
+		document.getElementById("content").innerHTML = "";
+		window.selected_master_folder = null;
+	}
 	setTimeout(function () { msg_off(); }, 3000);
+};
+
+function select_master_folder(id) {
+	var folders = document.getElementsByClassName("menue-content");
+	var folder_names = document.getElementsByClassName("menue-content-text");
+	for(let i = 0; i < folders.length; i++) {
+		if(folders[i].classList.contains("menue-content-active")) {
+			folders[i].classList.remove("menue-content-active");
+			folder_names[i].classList.add("color-10");
+		}
+	}
+	document.getElementById("master-folder-"+id).classList.add("menue-content-active");
+	document.getElementById("master-folder-"+id).childNodes[0].classList.remove("color-10");
+	window.selected_master_folder = parseInt(id);
+};
+
+function preventDefaults(e) {
+	e.preventDefault();
+	e.stopPropagation();
+};
+
+function highlight(e) {
+	document.getElementsByTagName("main")[0].classList.add('highlight');
+};
+
+function unhighlight(e) {
+	document.getElementsByTagName("main")[0].classList.remove('highlight');
+};
+
+function upload_files(data_files) {
+	if(window.selected_master_folder != null) {
+		var data = data_files.dataTransfer;
+		var files = data.files;
+		var tmp_files = Array.from(files);
+		console.log(tmp_files);
+	}
 };
