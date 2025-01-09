@@ -230,31 +230,42 @@ function main_backend_request(script, functions, data) {
 	});
 };
 
-function get_folders() {
+function get_master_folders() {
 	load("Liste Verzeichnisse...");
-	data = new FormData();
+	var data = new FormData();
 	data.append("get", 1);
-	fu = Array();
+	var fu = Array();
 	fu[0] = Array();
-	fu[0][0] = "get_folders_success";
+	fu[0][0] = "get_master_folders_success";
 	fu[0][1] = 0;
-	main_backend_request("./scripts/get_folders", fu, data);
+	main_backend_request("./scripts/get_master_folders", fu, data);
 };
 
-function get_folders_success(data) {
+function get_master_folders_success(data) {
 	var menue_box = document.getElementById("menue-content");
 	menue_box.innerHTML = "";
 	for(let i = 0; i < data.length; i++) {
 		var menue_content = document.createElement("div");
+		menue_content.setAttribute("id", "master-folder-"+data[i][0]);
 		menue_content.setAttribute("class", "menue-content justify-start align-items-center");
 		var menue_text = document.createElement("div");
-		menue_text.setAttribute("class", "menue-content-text color-2 font-150 bold");
+		menue_text.setAttribute("class", "menue-content-text color-10 font-150 bold");
+		menue_text.setAttribute("title", data[i][1]);
+		menue_text.setAttribute("onclick", "");
 		menue_text.innerText = data[i][1];
-		var menue_button = document.createElement("img");
-		menue_button.setAttribute("class", "menue-content-button");
-		menue_button.setAttribute("src", "./images/delete_1.png");
+		var menue_edit = document.createElement("img");
+		menue_edit.setAttribute("class", "menue-content-button");
+		menue_edit.setAttribute("src", "./images/edit_1.png");
+		menue_edit.setAttribute("title", "Hauptordner "+data[i][1]+" bearbeiten");
+		menue_edit.setAttribute("onclick", "("+data[i][0]+")");
+		var menue_remove = document.createElement("img");
+		menue_remove.setAttribute("class", "menue-content-button bg-red");
+		menue_remove.setAttribute("src", "./images/delete_1.png");
+		menue_remove.setAttribute("title", "Hauptordner "+data[i][1]+" entfernen");
+		menue_remove.setAttribute("onclick", "ask_remove_master_folder("+data[i][0]+")");
 		menue_content.appendChild(menue_text);
-		menue_content.appendChild(menue_button);
+		menue_content.appendChild(menue_edit);
+		menue_content.appendChild(menue_remove);
 		menue_box.appendChild(menue_content);
 	}
 	msg_off();
@@ -269,24 +280,58 @@ function new_master_folder() {
 	buttons.push("Erstellen");
 	buttons.push("Abbrechen");
 	var button_fu = Array();
-	button_fu.push("save_new_master_folder()");
+	button_fu.push("save_master_folder()");
 	button_fu.push("msg_off()");
 	msg_on(type, title, body, buttons, button_fu);
 };
 
-function save_new_master_folder() {
+function save_master_folder() {
 	var name = document.getElementsByName("folder-name")[0].value;
-	data = new FormData();
+	var data = new FormData();
 	data.append("save", 1);
 	data.append("name", name);
-	fu = Array();
+	var fu = Array();
 	fu[0] = Array();
-	fu[0][0] = "save_new_master_folder_success";
+	fu[0][0] = "save_master_folder_success";
 	fu[0][1] = 0;
 	main_backend_request("./scripts/save_master_folder", fu, data);
 };
 
-function save_new_master_folder_success() {
+function save_master_folder_success() {
 	save("Neuer Ordner erfolgreich gespeichert");
-	setTimeout(function () { get_folders(); }, 3000);
+	setTimeout(function () { get_master_folders(); }, 3000);
+};
+
+function ask_remove_master_folder(id) {
+	var type = "Error";
+	var title = "Ordner entfernen";
+	var body = "Sind Sie sicher, das Sie den Ordner <span class='bold color-5'>entfernen</span> möchten?<br>";
+	body += "Alle Dateien innerhalb dieses Ordner werden <span class='bold color-5'>unwiederuflich</span> entfernt";
+	var buttons = Array();
+	buttons.push("Entfernen");
+	buttons.push("Abbrechen");
+	var button_fu = Array();
+	button_fu.push("remove_master_folder("+id+")");
+	button_fu.push("msg_off()");
+	msg_on(type, title, body, buttons, button_fu);
+};
+
+function remove_master_folder(id) {
+	load("Entferne Hauptverzeichnis...");
+	var data = new FormData();
+	data.append("remove", 1);
+	data.append("id", id);
+	var fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "remove_master_folder_success";
+	fu[0][1] = 1;
+	fu[0][2] = id;
+	main_backend_request("./scripts/remove_master_folder", fu, data);
+};
+
+function remove_master_folder_success(id, data) {
+	save("Hauptverzeichnis "+data[0]+" mit "+data[1]+" Datein vollständig entfernt");
+	var rm = document.getElementById("master-folder-"+id);
+	rm.parentElement.removeChild(rm);
+	setTimeout(function () { msg_off(); }, 3000);
 };
