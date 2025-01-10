@@ -1,10 +1,14 @@
 var debug_mode = true;
 var selected_master_folder = null;
-var drop = document.getElementsByTagName("body")[0];
-['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => { drop.addEventListener(eventName, preventDefaults, false); });
+var tmp_files_folder = Array();
+var tmp_files = null;
+var drop = document;
+['dragenter', 'dragover'].forEach(eventName => { drop.addEventListener(eventName, preventDefaults, false); });
 ['dragenter', 'dragover'].forEach(eventName => { drop.addEventListener(eventName, highlight, false); });
-['dragleave', 'drop'].forEach(eventName => { drop.addEventListener(eventName, unhighlight, false); });
-drop.addEventListener('drop', upload_files, false);
+var dropzone = document.getElementById("drag-drop");
+['dragleave', 'drop'].forEach(eventName => { dropzone.addEventListener(eventName, preventDefaults, false); });
+['dragleave', 'drop'].forEach(eventName => { dropzone.addEventListener(eventName, unhighlight, false); });
+dropzone.addEventListener('drop', upload_files, false);
 
 function msg_off() {
 	var conf_box = document.getElementById("msg-box");
@@ -404,18 +408,69 @@ function preventDefaults(e) {
 };
 
 function highlight(e) {
-	document.getElementsByTagName("main")[0].classList.add('highlight');
+	if(window.selected_master_folder != null) {
+		document.getElementById("drag-drop").classList.add('flex');
+	}
 };
 
 function unhighlight(e) {
-	document.getElementsByTagName("main")[0].classList.remove('highlight');
+	document.getElementById("drag-drop").classList.remove('flex');
 };
 
 function upload_files(data_files) {
 	if(window.selected_master_folder != null) {
 		var data = data_files.dataTransfer;
 		var files = data.files;
-		var tmp_files = Array.from(files);
-		console.log(tmp_files);
+		window.tmp_files = Array.from(files);
+		var upload_box = document.getElementById("upload-process");
+		upload_box.classList.add("flex");
+		var content = document.getElementById("content");
+		content.setAttribute("style", "height: calc(100% - 3.25rem);");
+		for(let i = 0; i < window.tmp_files.length; i++) {
+			var upload_item = document.createElement("div");
+			upload_item.setAttribute("class", "upload-item");
+			upload_item.setAttribute("title", "Entfernen");
+			var upload_img = document.createElement("img");
+			upload_img.setAttribute("class", "upload-icon");
+			upload_img.setAttribute("src", "./images/image_1.png");
+			upload_item.appendChild(upload_img);
+			upload_box.appendChild(upload_item);
+			window.tmp_files_folder.push(window.selected_master_folder);
+		}
+		upload_process();
 	}
+};
+
+function upload_process() {
+	set_active_upload();
+	var data = new FormData();
+	data.append("save", 1);
+	data.append("id", window.tmp_files_folder[0])
+	data.append("file", window.tmp_files[0]);
+	var fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "upload_process_success";
+	fu[0][1] = 0;
+	main_backend_request("./scripts/save_upload_file", fu, data);
+};
+
+function upload_process_success() {
+	var upload_box = document.getElementById("upload-process");
+	upload_box.removeChild(upload_box.firstChild);
+	window.tmp_files.splice(0, 1);
+	window.tmp_files_folder.splice(0, 1);
+	if(window.tmp_files.length == 0) {
+		window.tmp_files = null;
+		window.tmp_files_folder = Array();
+		upload_box.classList.remove("flex");
+		var content = document.getElementById("content");
+		content.removeAttribute("style");
+	} else {
+		upload_process();
+	}
+};
+
+function set_active_upload() {
+	var upload_box = document.getElementById("upload-process");
+	upload_box.firstChild.classList.add("active-upload");
 };

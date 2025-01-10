@@ -232,6 +232,26 @@ Bildschirm Ansicht
 		}
 	}
 
+	.drag-drop {
+		display: none;
+		position: absolute;
+		height: calc(100% - 0.5rem);
+		width: calc(100% - 0.5rem);
+		border: 0.25rem dashed rgba(37,150,43,1);
+		background-color: rgba(37,150,43,0.4);
+		justify-content: center;
+		align-items: center;
+		z-index: 99;
+	}
+
+	.upload-img {
+		display: block;
+		margin: 0;
+		padding: 0;
+		width: 10rem;
+		height: 10rem;
+	}
+
 	.label-msg {
 		display: block;
 	}
@@ -371,7 +391,7 @@ Bildschirm Ansicht
 		background-color: rgba(255,0,0,1);
 	}
 
-	.content {
+	.main-content {
 		display: block;
 		margin: 0;
 		padding: 0;
@@ -379,10 +399,52 @@ Bildschirm Ansicht
 		height: 100%;
 	}
 
-	.highlight {
-		height: calc(100% - 7.5rem)!important;
-		width: calc(100% - 0.5rem)!important;
-		border: 0.25rem dashed rgba(37,150,43,1);
+	.upload-process {
+		display: none;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 3rem;
+		border-bottom: 0.25rem solid rgba(100,100,100,1);
+		justify-content: flex-start;
+		align-items: center;
+	}
+
+	.upload-item {
+		display: flex;
+		margin: 0 0 0 0.15rem;
+		padding: 0;
+		width: 2rem;
+		height: 2rem;
+		background-color: rgba(100,100,100,1);
+		border-radius: 0.15rem;
+		cursor: pointer;
+		justify-content: center;
+		align-items: center;
+	}
+
+	.upload-icon {
+		display: block;
+		margin: 0;
+		padding: 0;
+		width: auto;
+		max-width: 2rem;
+		height: auto;
+		max-height: 2rem;
+		border-radius: 0.15rem;
+	}
+
+	.active-upload {
+		background-color: rgba(0,134,125,1);
+	}
+
+	.content {
+		display: block;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+		overflow-y: auto;
 	}
 
     .scroll-y {

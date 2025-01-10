@@ -16,7 +16,7 @@ if(isset($_POST['save'])) {
         $result = $statement->execute(array("folder_name" => $name));
         if(!$result) {
             $error = true;
-            $msg["ERROR"][] = "Titel konnte nicht gespeichert werden";
+            $msg["ERROR"][] = "Hauptverzeichnis konnte nicht gespeichert werden";
         }
     }
 
