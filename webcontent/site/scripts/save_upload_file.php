@@ -71,17 +71,31 @@ if(isset($_POST['save'])) {
     }
 
     if(!$error) {
+        $comp = explode(".", $_FILES['file']['name']);
+        unset($comp[count($comp)-1]);
+		$fname = "";
+		foreach($comp as $index => $sname) {
+			$fname .= $sname;
+		}
         $statement = $pdo->prepare("INSERT INTO files (folder_id, file_name_original, file_name_saved, file_path, file_type, file_size) VALUES (:folder_id, :file_name_original, :file_name_saved, :file_path, :file_type, :file_size)");
-        $result = $statement->execute(array("folder_id" => $id, "file_name_original" => $_FILES['file']['tmp_name'], "file_name_saved" => $name, "file_path" => $file_path, "file_type" => $end, "file_size" => $file_size));
+        $result = $statement->execute(array("folder_id" => $id, "file_name_original" => $fname, "file_name_saved" => $name, "file_path" => $file_path, "file_type" => $end, "file_size" => $file_size));
         if(!$result) {
 			$error = true;
 			$msg["ERROR"][] = "Die Datei konnte nicht gespeichert werden, bitte versuchen Sie es später erneut";
             unlink($file_path.$name);
-		}
+		} else {
+            $n_id = $pdo->lastInsertId();
+            $data["FID"] = $id;
+            $data["ID"] = $n_id;
+            $data["NAME_O"] = $fname;
+            $data["NAME_S"] = $file_path.$name;
+            $data["SIZE"] = $file_size;
+            $data["TYPE"] = $end;
+        }
     }
 
     if(!$error) {
-		echo JSON_ENCODE("TRUE");
+		echo JSON_ENCODE($data);
 	} else {
 		echo JSON_ENCODE($msg);
 	}

@@ -9,6 +9,10 @@ var dropzone = document.getElementById("drag-drop");
 ['dragleave', 'drop'].forEach(eventName => { dropzone.addEventListener(eventName, preventDefaults, false); });
 ['dragleave', 'drop'].forEach(eventName => { dropzone.addEventListener(eventName, unhighlight, false); });
 dropzone.addEventListener('drop', upload_files, false);
+var x = null;
+var y = null;
+document.addEventListener('mousemove', onMouseUpdate, false);
+document.addEventListener('click', closeContext, false);
 
 function msg_off() {
 	var conf_box = document.getElementById("msg-box");
@@ -400,6 +404,129 @@ function select_master_folder(id) {
 	document.getElementById("master-folder-"+id).classList.add("menue-content-active");
 	document.getElementById("master-folder-"+id).childNodes[0].classList.remove("color-10");
 	window.selected_master_folder = parseInt(id);
+	get_master_folder_contents(id);
+};
+
+function get_master_folder_contents(id) {
+	load("Lade Dateien...");
+	var data = new FormData();
+	data.append("get", 1);
+	data.append("id", id);
+	var fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "get_master_folder_contents_success";
+	fu[0][1] = 0;
+	main_backend_request("./scripts/get_master_folder_contents", fu, data);
+};
+
+function get_master_folder_contents_success(data) {
+	var content = document.getElementById("content");
+	content.innerHTML = "";
+	for(let i = 0; i < data.length; i++) {
+		var data_block = document.createElement("div");
+		data_block.setAttribute("class", "data-view");
+		data_block.setAttribute("title", data[i]["NAME_O"]);
+		data_block.setAttribute("id", "file-"+data[i]["ID"]);
+		data_block.setAttribute("oncontextmenu", "show_context_menue("+data[i]["ID"]+", '"+data["NAME_O"]+"', '"+data[i]["NAME_S"].substring(1)+"')");
+		var wrap = document.createElement("div");
+		wrap.setAttribute("class", "data-view-wrap");
+		var img = document.createElement("img");
+		img.setAttribute("class", "data-view-preview");
+		if(data[i]["TYPE"].toUpperCase() == "PNG" || data[i]["TYPE"].toUpperCase() == "JPG" || data[i]["TYPE"].toUpperCase() == "JPEG" || data[i]["TYPE"].toUpperCase() == "GIF" || data[i]["TYPE"].toUpperCase() == "WEBP") {
+			data_block.setAttribute("ondblclick", "show_image('"+data[i]["NAME_S"].substring(1)+"')");
+			img.setAttribute("src", data[i]["NAME_S"].substring(1));
+		} else if(data[i]["TYPE"].toUpperCase() == "MP3" || data[i]["TYPE"].toUpperCase() == "WAV" || data[i]["TYPE"].toUpperCase() == "WMA" || data[i]["TYPE"].toUpperCase() == "FLAC" || data[i]["TYPE"].toUpperCase() == "OGG") {
+			data_block.setAttribute("ondblclick", "show_audio('"+data[i]["NAME_S"].substring(1)+"')");
+			img.setAttribute("src", "./images/audio_1.png");
+		} else if(data[i]["TYPE"].toUpperCase() == "MP4" || data[i]["TYPE"].toUpperCase() == "WEBM" || data[i]["TYPE"].toUpperCase() == "AVI") {
+			data_block.setAttribute("ondblclick", "show_video('"+data[i]["NAME_S"].substring(1)+"')");
+			img.setAttribute("src", "./images/video_1.png");
+		} else if(data[i]["TYPE"].toUpperCase() == "PDF") {
+			data_block.setAttribute("ondblclick", "show_pdf('"+data[i]["NAME_S"].substring(1)+"')");
+			img.setAttribute("src", "./images/pdf_1.png");
+		} else {
+			img.setAttribute("src", "./images/file_1.png");
+		}
+		wrap.appendChild(img);
+		data_block.appendChild(wrap);
+		var name = document.createElement("div");
+		name.setAttribute("class", "data-view-name");
+		name.innerText = data[i]["NAME_O"]+"."+data[i]["TYPE"];
+		data_block.appendChild(name);
+		content.appendChild(data_block);
+		show_context_false(data_block);
+	}
+	msg_off();
+};
+
+function show_image(file) {
+
+};
+
+function show_audio(file) {
+
+};
+
+function show_video(file) {
+
+};
+
+function show_pdf(file) {
+
+};
+
+function rename_file(id, name) {
+
+};
+
+function download_file(id, path) {
+
+};
+
+function remove_file(id, name) {
+
+};
+
+function show_context_menue(id, name, path) {
+	var msg_box = document.getElementById("msg-box");
+	msg_box.setAttribute("class", "context-menue");
+	msg_box.setAttribute("style", "z-index: 999;");
+	msg_box.innerHTML = "";
+	msg_box.style.left = window.x-msg_box.offsetWidth+"px";
+	msg_box.style.top = window.y+"px";
+	var menue_1 = document.createElement("div");
+	menue_1.setAttribute("class", "context-item");
+	menue_1.setAttribute("onclick", "rename_file("+id+")");
+	menue_1.innerText = "Umbenennen";
+	msg_box.appendChild(menue_1);
+	var menue_2 = document.createElement("div");
+	menue_2.setAttribute("class", "context-item");
+	menue_2.setAttribute("onclick", "download_file("+id+")");
+	menue_2.innerText = "Herunterladen";
+	msg_box.appendChild(menue_2);
+	var menue_3 = document.createElement("div");
+	menue_3.setAttribute("class", "context-item");
+	menue_3.setAttribute("onclick", "remove_file("+id+")");
+	menue_3.innerText = "Entfernen";
+	msg_box.appendChild(menue_3);
+};
+
+function closeContext() {
+	msg_box = document.getElementById("msg-box");
+	if(msg_box.classList.contains("context-menue")) {
+		msg_box.classList.remove("context-menue");
+	}
+};
+
+function onMouseUpdate(e) {
+	window.x = e.pageX;
+	window.y = e.pageY;
+};
+
+function show_context_false(elem) {
+	elem.addEventListener('contextmenu', function(e) {
+		e.preventDefault();
+	}, false);
 };
 
 function preventDefaults(e) {
@@ -425,14 +552,25 @@ function upload_files(data_files) {
 		var upload_box = document.getElementById("upload-process");
 		upload_box.classList.add("flex");
 		var content = document.getElementById("content");
-		content.setAttribute("style", "height: calc(100% - 3.25rem);");
+		content.setAttribute("style", "max-height: calc(100% - 3.25rem);");
 		for(let i = 0; i < window.tmp_files.length; i++) {
+			var comp = window.tmp_files[i]["type"].split("/");
 			var upload_item = document.createElement("div");
 			upload_item.setAttribute("class", "upload-item");
 			upload_item.setAttribute("title", "Entfernen");
 			var upload_img = document.createElement("img");
 			upload_img.setAttribute("class", "upload-icon");
-			upload_img.setAttribute("src", "./images/image_1.png");
+			if(comp[1].toUpperCase() == "PNG" || comp[1].toUpperCase() == "JPG" || comp[1].toUpperCase() == "JPEG" || comp[1].toUpperCase() == "GIF" || comp[1].toUpperCase() == "WEBP") {
+				upload_img.setAttribute("src", "./images/image_1.png");
+			} else if(comp[1].toUpperCase() == "MP3" || comp[1].toUpperCase() == "WAV" || comp[1].toUpperCase() == "WMA" || comp[1].toUpperCase() == "FLAC" || comp[1].toUpperCase() == "OGG") {
+				upload_img.setAttribute("src", "./images/audio_1.png");
+			} else if(comp[1].toUpperCase() == "MP4" || comp[1].toUpperCase() == "WEBM" || comp[1].toUpperCase() == "AVI") {
+				upload_img.setAttribute("src", "./images/video_1.png");
+			} else if(comp[1].toUpperCase() == "PDF") {
+				upload_img.setAttribute("src", "./images/pdf_1.png");
+			} else {
+				upload_img.setAttribute("src", "./images/file_1.png");
+			}
 			upload_item.appendChild(upload_img);
 			upload_box.appendChild(upload_item);
 			window.tmp_files_folder.push(window.selected_master_folder);
@@ -454,7 +592,10 @@ function upload_process() {
 	main_backend_request("./scripts/save_upload_file", fu, data);
 };
 
-function upload_process_success() {
+function upload_process_success(data) {
+	if(parseInt(data["FID"]) == parseInt(window.selected_master_folder)) {
+		build_data_view(data);
+	}
 	var upload_box = document.getElementById("upload-process");
 	upload_box.removeChild(upload_box.firstChild);
 	window.tmp_files.splice(0, 1);
@@ -473,4 +614,40 @@ function upload_process_success() {
 function set_active_upload() {
 	var upload_box = document.getElementById("upload-process");
 	upload_box.firstChild.classList.add("active-upload");
+};
+
+function build_data_view(data) {
+	var content = document.getElementById("content");
+	var data_block = document.createElement("div");
+	data_block.setAttribute("class", "data-view");
+	data_block.setAttribute("title", data["NAME_O"]);
+	data_block.setAttribute("id", "file-"+data["ID"]);
+	data_block.setAttribute("oncontextmenu", "show_context_menue("+data["ID"]+", '"+data["NAME_O"]+"', '"+data[i]["NAME_S"].substring(1)+"')");
+	var wrap = document.createElement("div");
+	wrap.setAttribute("class", "data-view-wrap");
+	var img = document.createElement("img");
+	img.setAttribute("class", "data-view-preview");
+	if(data["TYPE"].toUpperCase() == "PNG" || data["TYPE"].toUpperCase() == "JPG" || data["TYPE"].toUpperCase() == "JPEG" || data["TYPE"].toUpperCase() == "GIF" || data["TYPE"].toUpperCase() == "WEBP") {
+		data_block.setAttribute("ondblclick", "show_image('"+data["NAME_S"].substring(1)+"')");
+		img.setAttribute("src", data["NAME_S"].substring(1));
+	} else if(data["TYPE"].toUpperCase() == "MP3" || data["TYPE"].toUpperCase() == "WAV" || data["TYPE"].toUpperCase() == "WMA" || data["TYPE"].toUpperCase() == "FLAC" || data["TYPE"].toUpperCase() == "OGG") {
+		data_block.setAttribute("ondblclick", "show_audio('"+data["NAME_S"].substring(1)+"')");
+		img.setAttribute("src", "./images/audio_1.png");
+	} else if(data["TYPE"].toUpperCase() == "MP4" || data["TYPE"].toUpperCase() == "WEBM" || data["TYPE"].toUpperCase() == "AVI") {
+		data_block.setAttribute("ondblclick", "show_video('"+data["NAME_S"].substring(1)+"')");
+		img.setAttribute("src", "./images/video_1.png");
+	} else if(data["TYPE"].toUpperCase() == "PDF") {
+		data_block.setAttribute("ondblclick", "show_pdf('"+data["NAME_S"].substring(1)+"')");
+		img.setAttribute("src", "./images/pdf_1.png");
+	} else {
+		img.setAttribute("src", "./images/file_1.png");
+	}
+	wrap.appendChild(img);
+	data_block.appendChild(wrap);
+	var name = document.createElement("div");
+	name.setAttribute("class", "data-view-name");
+	name.innerText = data["NAME_O"]+"."+data["TYPE"];
+	data_block.appendChild(name);
+	content.appendChild(data_block);
+	show_context_false(data_block);
 };
