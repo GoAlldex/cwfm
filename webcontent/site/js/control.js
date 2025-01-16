@@ -427,7 +427,7 @@ function get_master_folder_contents_success(data) {
 		data_block.setAttribute("class", "data-view");
 		data_block.setAttribute("title", data[i]["NAME_O"]);
 		data_block.setAttribute("id", "file-"+data[i]["ID"]);
-		data_block.setAttribute("oncontextmenu", "show_context_menue("+data[i]["ID"]+", '"+data["NAME_O"]+"', '"+data[i]["NAME_S"].substring(1)+"')");
+		data_block.setAttribute("oncontextmenu", "show_context_menue("+data[i]["ID"]+", '"+data[i]["NAME_O"]+"', '"+data[i]["NAME_S"].substring(1)+"', '"+data[i]["TYPE"]+"')");
 		var wrap = document.createElement("div");
 		wrap.setAttribute("class", "data-view-wrap");
 		var img = document.createElement("img");
@@ -475,19 +475,105 @@ function show_pdf(file) {
 
 };
 
-function rename_file(id, name) {
-
+function ask_rename_file(id, name) {
+	closeContext();
+	var type = "Error";
+	var title = "Datei umbenennen";
+	var body = '<label class="label-msg font-100">Neuer Dateiname:</label>';
+	body += '<input type="text" class="input-msg font-100" name="file-name" placeholder="Dateiname..." title="Bitte geben Sie einen Dateinamen ein" autocomplete="off" value="'+name+'">';
+	var buttons = Array();
+	buttons.push("Speichern");
+	buttons.push("Abbrechen");
+	var button_fu = Array();
+	button_fu.push("rename_file("+id+")");
+	button_fu.push("msg_off()");
+	msg_on(type, title, body, buttons, button_fu);
 };
 
-function download_file(id, path) {
-
+function rename_file(id) {
+	var name = document.getElementsByName("file-name")[0].value;
+	load("Speichere neuen Dateinamen...");
+	var data = new FormData();
+	data.append("save", 1);
+	data.append("id", id);
+	data.append("name", name);
+	var fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "rename_file_success";
+	fu[0][1] = 1;
+	fu[0][2] = id;
+	main_backend_request("./scripts/edit_file_name", fu, data);
 };
 
-function remove_file(id, name) {
-
+function rename_file_success(id, data) {
+	document.getElementById("file-"+id).childNodes[1].innerText = data["NAME_O"]+"."+data["TYPE"];
+	save("Neuer Dateiname erfolgreich gespeichert");
+	setTimeout(function () { msg_off(); }, 3000);
 };
 
-function show_context_menue(id, name, path) {
+function blobToBase64(blob) {
+	return new Promise((resolve, _) => {
+	  const reader = new FileReader();
+	  reader.onloadend = () => resolve(reader.result);
+	  reader.readAsDataURL(blob);
+	});
+  };
+
+async function download_file(name, path, type) {
+	closeContext();
+	const response = await fetch(new URL(path , document.baseURI).href)
+	if(!response.ok) {
+		return;
+	}
+	const blob = await response.blob();
+	var reader = new FileReader();
+	reader.readAsDataURL(blob); 
+	reader.onloadend = function() {
+		var base64data = reader.result;
+		const a = document.createElement('a');
+		a.style.display = 'none';
+		document.body.appendChild(a);
+		a.href = base64data;
+		a.download = name+"."+type;
+		a.click();
+		document.body.removeChild(a);
+	}
+};
+
+function ask_remove_file(id, name) {
+	closeContext();
+	var type = "Error";
+	var title = "Datei entfernen";
+	var body = 'Sind Sie sicher, das Sie die Datei <span class="bold color-5">'+name+' entfernen</span> möchten?';
+	var buttons = Array();
+	buttons.push("Entfernen");
+	buttons.push("Abbrechen");
+	var button_fu = Array();
+	button_fu.push("remove_file("+id+")");
+	button_fu.push("msg_off()");
+	msg_on(type, title, body, buttons, button_fu);
+};
+
+function remove_file(id) {
+	load("Entferne Datei...");
+	var data = new FormData();
+	data.append("remove", 1);
+	data.append("id", id);
+	var fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "remove_file_success";
+	fu[0][1] = 1;
+	fu[0][2] = id;
+	main_backend_request("./scripts/remove_file", fu, data);
+};
+
+function remove_file_success(id, data) {
+	document.getElementById("file-"+id).parentNode.removeChild(document.getElementById("file-"+id));
+	save("Datei erfolgreich entfernt");
+	setTimeout(function () { msg_off(); }, 3000);
+};
+
+function show_context_menue(id, name, path, type) {
 	var msg_box = document.getElementById("msg-box");
 	msg_box.setAttribute("class", "context-menue");
 	msg_box.setAttribute("style", "z-index: 999;");
@@ -496,17 +582,17 @@ function show_context_menue(id, name, path) {
 	msg_box.style.top = window.y+"px";
 	var menue_1 = document.createElement("div");
 	menue_1.setAttribute("class", "context-item");
-	menue_1.setAttribute("onclick", "rename_file("+id+")");
+	menue_1.setAttribute("onclick", "ask_rename_file("+id+", '"+name+"')");
 	menue_1.innerText = "Umbenennen";
 	msg_box.appendChild(menue_1);
 	var menue_2 = document.createElement("div");
 	menue_2.setAttribute("class", "context-item");
-	menue_2.setAttribute("onclick", "download_file("+id+")");
+	menue_2.setAttribute("onclick", "download_file('"+name+"', '"+path+"', '"+type+"')");
 	menue_2.innerText = "Herunterladen";
 	msg_box.appendChild(menue_2);
 	var menue_3 = document.createElement("div");
 	menue_3.setAttribute("class", "context-item");
-	menue_3.setAttribute("onclick", "remove_file("+id+")");
+	menue_3.setAttribute("onclick", "ask_remove_file("+id+", '"+name+"')");
 	menue_3.innerText = "Entfernen";
 	msg_box.appendChild(menue_3);
 };
@@ -515,6 +601,9 @@ function closeContext() {
 	msg_box = document.getElementById("msg-box");
 	if(msg_box.classList.contains("context-menue")) {
 		msg_box.classList.remove("context-menue");
+		msg_box.classList.add("msg-box");
+		msg_box.removeAttribute("style");
+		msg_box.innerHTML = "";
 	}
 };
 
@@ -622,7 +711,7 @@ function build_data_view(data) {
 	data_block.setAttribute("class", "data-view");
 	data_block.setAttribute("title", data["NAME_O"]);
 	data_block.setAttribute("id", "file-"+data["ID"]);
-	data_block.setAttribute("oncontextmenu", "show_context_menue("+data["ID"]+", '"+data["NAME_O"]+"', '"+data[i]["NAME_S"].substring(1)+"')");
+	data_block.setAttribute("oncontextmenu", "show_context_menue("+data["ID"]+", '"+data["NAME_O"]+"', '"+data["NAME_S"].substring(1)+"', '"+data["TYPE"]+"')");
 	var wrap = document.createElement("div");
 	wrap.setAttribute("class", "data-view-wrap");
 	var img = document.createElement("img");

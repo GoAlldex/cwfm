@@ -34,8 +34,8 @@ if(isset($_POST['remove'])) {
         $i = 0;
         $s = 0;
         foreach($result as $index => $row) {
-            if(is_dir("../".$row["file_path"]."/")) {
-                if(!unlink("../".$row["file_path"]."/".$row["file_name_saved"].".".$row["file_type"])) {
+            if(is_dir($row["file_path"]."/")) {
+                if(!unlink($row["file_path"].$row["file_name_saved"])) {
                     $s++;
                     $error = true;
                     $msg["ERROR"][] = "Datei ".$row["file_name_original"]." konnte nicht entfernt werden";
@@ -51,7 +51,7 @@ if(isset($_POST['remove'])) {
             } else {
                 $s++;
                 $error = true;
-                $msg["ERROR"][] = "Ungültiges Hauptverzeichnis ".$row["file_path"]."/ für die Datei ".$row["file_name_original"];
+                $msg["ERROR"][] = "Ungültiges Hauptverzeichnis ".$row["file_path"]." für die Datei ".$row["file_name_original"];
             }
             $i++;
         }
