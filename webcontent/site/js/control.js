@@ -13,6 +13,7 @@ var x = null;
 var y = null;
 document.addEventListener('mousemove', onMouseUpdate, false);
 document.addEventListener('click', closeContext, false);
+var duration = null;
 
 function msg_off() {
 	var conf_box = document.getElementById("msg-box");
@@ -419,13 +420,25 @@ function get_master_folder_contents(id) {
 	main_backend_request("./scripts/get_master_folder_contents", fu, data);
 };
 
+function fsize(file_size) {
+	var fs_count = 0;
+	var fs = file_size;
+	while(fs > 1024) {
+		fs_count++;
+		fs = fs/1024;
+	}
+	fs = Math.round(fs*100)/100;
+	var fs_name = Array("B", "KB", "MB", "GB", "TB");
+	return fs.toString()+" "+fs_name[fs_count];
+};
+
 function get_master_folder_contents_success(data) {
 	var content = document.getElementById("content");
 	content.innerHTML = "";
 	for(let i = 0; i < data.length; i++) {
 		var data_block = document.createElement("div");
 		data_block.setAttribute("class", "data-view");
-		data_block.setAttribute("title", data[i]["NAME_O"]);
+		data_block.setAttribute("title", "Name: "+data[i]["NAME_O"]+"\nDateityp: "+data[i]["TYPE"].toUpperCase()+"\nGröße: "+fsize(data[i]["SIZE"])+"\nErstellzeit: "+data[i]["CREATION_DATE"]);
 		data_block.setAttribute("id", "file-"+data[i]["ID"]);
 		data_block.setAttribute("oncontextmenu", "show_context_menue("+data[i]["ID"]+", '"+data[i]["NAME_O"]+"', '"+data[i]["NAME_S"].substring(1)+"', '"+data[i]["TYPE"]+"')");
 		var wrap = document.createElement("div");
@@ -436,7 +449,7 @@ function get_master_folder_contents_success(data) {
 			data_block.setAttribute("ondblclick", "show_image('"+data[i]["NAME_S"].substring(1)+"')");
 			img.setAttribute("src", data[i]["NAME_S"].substring(1));
 		} else if(data[i]["TYPE"].toUpperCase() == "MP3" || data[i]["TYPE"].toUpperCase() == "WAV" || data[i]["TYPE"].toUpperCase() == "WMA" || data[i]["TYPE"].toUpperCase() == "FLAC" || data[i]["TYPE"].toUpperCase() == "OGG") {
-			data_block.setAttribute("ondblclick", "show_audio('"+data[i]["NAME_S"].substring(1)+"')");
+			data_block.setAttribute("ondblclick", "show_audio('"+data[i]["NAME_S"].substring(1)+"', '"+data[i]["NAME_O"]+"')");
 			img.setAttribute("src", "./images/audio_1.png");
 		} else if(data[i]["TYPE"].toUpperCase() == "MP4" || data[i]["TYPE"].toUpperCase() == "WEBM" || data[i]["TYPE"].toUpperCase() == "AVI") {
 			data_block.setAttribute("ondblclick", "show_video('"+data[i]["NAME_S"].substring(1)+"')");
@@ -459,20 +472,165 @@ function get_master_folder_contents_success(data) {
 	msg_off();
 };
 
-function show_image(file) {
-
+function generate_box() {
+	var box = document.getElementById("view-box");
+	box.classList.add("flex");
+	var close = document.createElement("img");
+	close.setAttribute("class", "view-close");
+	close.setAttribute("src", "./images/close_2.png");
+	close.setAttribute("title", "Schließen");
+	close.setAttribute("alt", "Schließen");
+	close.setAttribute("onclick", "show_close()");
+	box.appendChild(close);
+	return box;
 };
 
-function show_audio(file) {
+function show_close() {
+	var box = document.getElementById("view-box");
+	box.classList.remove("flex");
+	box.innerHTML = "";
+};
 
+/***********************************************************
+Musik Abspielen
+- Wenn bereits ein Audio läuft pausiere und entferne
+Fortschrittsbalken Interval
+- Spiele Audio Datei ab und setze Intervall für die aktualisierung
+des Fortschrittbalkens
+- Tausche Play/Pause Button
+***********************************************************/
+function play() {
+	var player = document.getElementById("audio");
+	if(!player.paused) {
+		player.pause();
+		document.getElementById("pause").classList.add("none");
+		document.getElementById("play").classList.remove("none");
+		clearInterval(window.duration);
+	}
+	document.getElementById("play").classList.add("none");
+	document.getElementById("pause").classList.remove("none");
+	player.load();
+	player.play();
+	window.duration = setInterval("duration_update()", 1000);
+};
+
+/***********************************************************
+Musik pausieren
+- Entferne Fortschrittsbalken Interval
+- Tausche Play/Pause Button
+***********************************************************/
+function pause() {
+	var player = document.getElementById("audio");
+	player.pause();
+	clearInterval(window.duration);
+	document.getElementById("pause").classList.add("none");
+	document.getElementById("play").classList.remove("none");
+};
+
+/***********************************************************
+Fortschrittsbalken (update)
+***********************************************************/
+function duration_update() {
+	var file = document.getElementById("audio");
+	var barSize = document.getElementById("player-duration-box").offsetWidth;
+	document.getElementById("duration").style.width = (parseInt(file.currentTime*(barSize)/file.duration))+"px";
+	if(file.ended) {
+		file.currentTime = 0;
+		document.getElementById("duration").style.width = "0px";
+		pause();
+	}
+};
+
+/***********************************************************
+Fortschrittsbalken vor-/zurückspulen
+***********************************************************/
+function duration_progress() {
+	var barSize = document.getElementById("player-duration-box").offsetWidth;
+	if(!document.getElementById("audio").ended) {
+		var file = document.getElementById("audio");
+		var mouseX = event.pageX-barSize-(barSize/7);
+		var newtime = mouseX*file.duration/barSize;
+		file.currentTime = newtime;
+		document.getElementById("duration").style.width = mouseX + "px";
+	} else {
+		file.currentTime = 0;
+		document.getElementById("duration").style.width = "0px";
+		pause();
+	}
+};
+
+function show_image(file) {
+	var box = generate_box();
+	var img = document.createElement("img");
+	img.setAttribute("class", "view-img");
+	img.setAttribute("src", file);
+	box.appendChild(img);
+};
+
+function show_audio(file, name) {
+	var box = generate_box();
+	var container = document.createElement("div");
+	container.setAttribute("class", "view-player-main");
+	var file_title = document.createElement("div");
+	file_title.setAttribute("class", "view-player-title");
+	file_title.setAttribute("title", name);
+	file_title.innerText = name;
+	var track = document.createElement("div");
+	track.setAttribute("class", "view-player-track");
+	var audio_file = document.createElement("audio");
+	audio_file.setAttribute("src", file);
+	audio_file.setAttribute("id", "audio");
+	track.appendChild(audio_file);
+	var btn_box = document.createElement("div");
+	btn_box.setAttribute("class", "masked-box");
+	var btn_play = document.createElement("img");
+	btn_play.setAttribute("class", "masked-image");
+	btn_play.setAttribute("src", "./images/play_1.png");
+	btn_play.setAttribute("alt", "Play");
+	btn_play.setAttribute("title", "Abspielen");
+	btn_play.setAttribute("id", "play");
+	btn_play.setAttribute("onclick", "play()");
+	btn_box.appendChild(btn_play);
+	var btn_pause = document.createElement("img");
+	btn_pause.setAttribute("class", "masked-image none");
+	btn_pause.setAttribute("src", "./images/pause_1.png");
+	btn_pause.setAttribute("alt", "Play");
+	btn_pause.setAttribute("title", "Abspielen");
+	btn_pause.setAttribute("id", "pause");
+	btn_pause.setAttribute("onclick", "pause()");
+	btn_box.appendChild(btn_pause);
+	track.appendChild(btn_box);
+	var duration_box = document.createElement("div");
+	duration_box.setAttribute("class", "player-duration-box");
+	duration_box.setAttribute("id", "player-duration-box");
+	duration_box.setAttribute("onclick", "duration_progress()");
+	var duration_line = document.createElement("div");
+	duration_line.setAttribute("class", "player-duration-line");
+	duration_line.setAttribute("id", "duration");
+	duration_box.appendChild(duration_line);
+	track.appendChild(duration_box);
+	container.appendChild(file_title);
+	container.appendChild(track);
+	box.appendChild(container);
 };
 
 function show_video(file) {
-
+	var box = generate_box();
+	var video = document.createElement("video");
+	video.setAttribute("class", "view-video");
+	video.setAttribute("controls", "");
+	var video_src = document.createElement("source");
+	video_src.setAttribute("src", file);
+	video.appendChild(video_src);
+	box.appendChild(video);
 };
 
 function show_pdf(file) {
-
+	var box = generate_box();
+	var pdf = document.createElement("iframe");
+	pdf.setAttribute("class", "view-pdf");
+	pdf.setAttribute("src", file);
+	box.appendChild(pdf);
 };
 
 function ask_rename_file(id, name) {
@@ -709,7 +867,7 @@ function build_data_view(data) {
 	var content = document.getElementById("content");
 	var data_block = document.createElement("div");
 	data_block.setAttribute("class", "data-view");
-	data_block.setAttribute("title", data["NAME_O"]);
+	data_block.setAttribute("title", "Name: "+data["NAME_O"]+"\nDateityp: "+data["TYPE"].toUpperCase()+"\nGröße: "+fsize(data["SIZE"])+"\nErstellzeit: "+data["CREATION_DATE"]);
 	data_block.setAttribute("id", "file-"+data["ID"]);
 	data_block.setAttribute("oncontextmenu", "show_context_menue("+data["ID"]+", '"+data["NAME_O"]+"', '"+data["NAME_S"].substring(1)+"', '"+data["TYPE"]+"')");
 	var wrap = document.createElement("div");
@@ -720,7 +878,7 @@ function build_data_view(data) {
 		data_block.setAttribute("ondblclick", "show_image('"+data["NAME_S"].substring(1)+"')");
 		img.setAttribute("src", data["NAME_S"].substring(1));
 	} else if(data["TYPE"].toUpperCase() == "MP3" || data["TYPE"].toUpperCase() == "WAV" || data["TYPE"].toUpperCase() == "WMA" || data["TYPE"].toUpperCase() == "FLAC" || data["TYPE"].toUpperCase() == "OGG") {
-		data_block.setAttribute("ondblclick", "show_audio('"+data["NAME_S"].substring(1)+"')");
+		data_block.setAttribute("ondblclick", "show_audio('"+data["NAME_S"].substring(1)+"', '"+data["NAME_O"]+"')");
 		img.setAttribute("src", "./images/audio_1.png");
 	} else if(data["TYPE"].toUpperCase() == "MP4" || data["TYPE"].toUpperCase() == "WEBM" || data["TYPE"].toUpperCase() == "AVI") {
 		data_block.setAttribute("ondblclick", "show_video('"+data["NAME_S"].substring(1)+"')");

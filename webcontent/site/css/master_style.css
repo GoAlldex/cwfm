@@ -471,9 +471,9 @@ Bildschirm Ansicht
 	.data-view-wrap {
 		display: flex;
 		margin: 0;
-		padding: 0;
-		width: 6rem;
-		height: 4.75rem;
+		padding: 0.25rem;
+		width: 5.5rem;
+		height: 4.25rem;
 		border-top-left-radius: 0.15rem;
 		border-top-right-radius: 0.15rem;
 		justify-content: center;
@@ -484,8 +484,8 @@ Bildschirm Ansicht
 		display: block;
 		margin: 0;
 		padding: 0;
-		max-width: 6rem;
-		max-height: 4.75rem;
+		max-width: 5.5rem;
+		max-height: 4.25rem;
 	}
 
 	.data-view-name {
@@ -529,6 +529,149 @@ Bildschirm Ansicht
 	.context-item:hover, .context-item:focus {
 		background-color: rgba(0,131,125,1);
 		transition-delay: 0s;
+	}
+
+	.view-box {
+		display: none;
+		position: relative;
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+		background-color: rgba(0,0,0,0.6);
+		justify-content: center;
+		align-items: center;
+		z-index: 99;
+	}
+
+	.view-close {
+		display: block;
+		position: absolute;
+		top: 0.5rem;
+		right: 0.5rem;
+		margin: 0;
+		padding: 0;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 100%;
+		cursor: pointer;
+		transition: .5s all;
+		transition-delay: 100ms;
+	}
+
+	.view-close:hover, .view-close:focus {
+		background-color: rgba(0,131,125,1);
+		transition-delay: 0s;
+	}
+
+	.view-img {
+		display: block;
+		margin: 0;
+		padding: 0;
+		max-height: 100%;
+		max-width: 100%;
+	}
+
+	.view-video {
+		display: block;
+		margin: 0;
+		padding: 0;
+		max-height: 100%;
+		max-width: 100%;
+	}
+
+	.view-pdf {
+		display: block;
+		margin: 0;
+		padding: 0;
+		height: calc(100% - 4rem);
+		width: calc(100% - 4rem);
+		border: none;
+	}
+
+	.view-player-main {
+		display: inline-block;
+		margin: 0;
+		padding: 0;
+		display: block;
+		height: auto;
+		width: 15rem;
+		border-radius: 0.15rem;
+		background-color: rgba(255,255,255,1);
+		box-shadow: 0.25rem 0.25rem 0.25rem rgba(0,0,0,1);
+	}
+	
+	.view-player-title {
+		display: block;
+		margin: 0;
+		padding: 0.25rem 0.5rem;
+		height: auto;
+		width: calc(100% - 1rem);
+		font-size: 1rem;
+		white-space: nowrap;
+		text-overflow:'...';
+		text-overflow: ellipsis;
+		overflow: hidden;
+		color: rgba(0,0,0,1);
+	}
+	
+	.view-player-track {
+		display: flex;
+		margin: 0;
+		padding: 0.25rem 0;
+		height: auto;
+		width: 100%;
+		justify-content: flex-start;
+		align-items: center;
+	}
+	
+	.masked-box {
+		display: block;
+		position: relative;
+		margin: 0 0.15rem;
+		padding: 0;
+		border-radius: 100%;
+		height: 3rem;
+		width: 3rem;
+		background-color: rgba(76,43,55,1);
+		outline: none;
+		cursor: pointer;
+		transition: .5s all;
+		transition-delay: 100ms;
+	}
+
+	.masked-box:hover, .masked-box:focus {
+		box-shadow: 0.25rem 0.25rem 0.25rem rgba(0,0,0,1);
+		transition-delay: 0s;
+	}
+	
+	.masked-image {
+		display: block;
+		margin: 0;
+		padding: 0.5rem;
+		height: calc(100% - 1rem);
+		width: calc(100% - 1rem);
+	}
+	
+	.player-duration-box {
+		display: block;
+		position: relative;
+		margin: 0 0 0 0.75rem;
+		padding: 0;
+		height: 0.5rem;
+		width: 10rem;
+		cursor: pointer;
+		background-color: rgba(100,100,100,1);
+	}
+	
+	.player-duration-line {
+		display: block;
+		position: absolute;
+		margin: 0;
+		padding: 0;
+		height: 0.5rem;
+		width: 0;
+		background-color: rgba(76,43,55,1);
 	}
 
     .scroll-y {

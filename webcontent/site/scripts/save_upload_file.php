@@ -86,12 +86,15 @@ if(isset($_POST['save'])) {
             unlink($file_path.$name);
 		} else {
             $n_id = $pdo->lastInsertId();
+            $sql = "SELECT id, creation_date FROM files WHERE id = ".$n_id;
+            $result = $pdo->query($sql)->fetch();
             $data["FID"] = $id;
             $data["ID"] = $n_id;
             $data["NAME_O"] = $fname;
             $data["NAME_S"] = $file_path.$name;
             $data["SIZE"] = $file_size;
             $data["TYPE"] = $end;
+            $data["CREATION_DATE"] = date("d.m.Y H:i:s", strtotime($result["creation_date"]));
         }
     }
 

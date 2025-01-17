@@ -26,7 +26,7 @@ if(isset($_POST['get'])) {
     }
 
     if(!$error) {
-        $sql = $pdo->prepare("SELECT id, folder_id, file_name_original, file_name_saved, file_path, file_type, file_size FROM files ORDER BY file_name_original ASC");
+        $sql = $pdo->prepare("SELECT id, folder_id, file_name_original, file_name_saved, file_path, file_type, file_size, creation_date FROM files ORDER BY file_name_original ASC");
         $sql->execute();
         $result = $sql->fetchAll(PDO::FETCH_ASSOC);
         $i = 0;
@@ -37,6 +37,7 @@ if(isset($_POST['get'])) {
             $data[$i]["NAME_S"] = $row["file_path"].$row["file_name_saved"];
             $data[$i]["SIZE"] = $row["file_size"];
             $data[$i]["TYPE"] = $row["file_type"];
+            $data[$i]["CREATION_DATE"] = date("d.m.Y H:i:s", strtotime($row["creation_date"]));
             $i++;
         }
         unset($i);
