@@ -1,6 +1,6 @@
 <?php
 /***********************************************************
-Gespeicherte Dateien eines hauptverzeichnisses ermitteln
+Gespeicherte Dateien eines Hauptverzeichnisses ermitteln
 ***********************************************************/
 if(isset($_POST['get'])) {
 	include("./db.php");

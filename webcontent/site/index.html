@@ -11,7 +11,7 @@
 		<title>CWFM</title>
 		<link rel="Stylesheet" href="./css/master_style.css">
     </head>
-    <body onload="get_master_folders(0)">
+    <body onload="get_master_folders(0);dashboard();">
         <div class="msg-box" id="msg-box"></div>
         <div class="view-box" id="view-box"></div>
         <div class="drag-drop" id="drag-drop">
@@ -19,7 +19,9 @@
         </div>
 		<div id="wrapper">
             <header>
-                <div class="header-footer-box justify-start align-items-center "></div>
+                <div class="header-footer-box justify-start align-items-center">
+                    <img class="dashboard-button" src="./images/split_1.png" alt="Dahsboard" title="Dashboard anzeigen" onclick="dashboard()">
+                </div>
                 <div class="header-footer-box justify-center align-items-center"></div>
                 <div class="header-footer-box justify-end align-items-center font-200 color-2 bold">CWFM</div>
             </header>

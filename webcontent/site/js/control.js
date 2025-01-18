@@ -34,6 +34,7 @@ document.addEventListener('click', closeContext, false);
 Audio wiedergeben
 ***********************************************************/
 var duration = null;
+var duration_box = null;
 
 /***********************************************************
 Nachrichtenbox schließen
@@ -299,6 +300,178 @@ function main_backend_request(script, functions, data) {
 };
 
 /***********************************************************
+Dashboard:
+- Hauptverzeichnis abwählen
+- Dashboard Button als ausgewählt markieren
+- Datenermittlungsfunktion aufrufen
+***********************************************************/
+function dashboard() {
+	load("Lade Dashboard...");
+	window.selected_master_folder = null;
+	unselect_master_folder();
+	document.getElementsByClassName("dashboard-button")[0].classList.add("dashboard-active");
+	document.getElementById("content").innerHTML = "";
+	get_dashboard_data();
+};
+
+/***********************************************************
+Dashboard Daten Abfrage vom Backend
+***********************************************************/
+function get_dashboard_data() {
+	var data = new FormData();
+	data.append("get", 1);
+	var fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "get_dashboard_data_success";
+	fu[0][1] = 0;
+	main_backend_request("./scripts/get_dashboard", fu, data);
+};
+
+/***********************************************************
+Dashboard anzeigen:
+- Balkendiagramm mit ermittelten Daten aufrufen
+- Kreisdiagramm mit ermittelten Daten aufrufen
+***********************************************************/
+function get_dashboard_data_success(data) {
+	var content = document.getElementById("content");
+	show_statistics(content, data);
+	show_storage(content, data);
+	msg_off();
+};
+
+/***********************************************************
+Balkendiagramm Datei Statistik:
+- Statistiken anzeigen (Hauptverzeichnisse, Datei Anzahl,
+Dateitypen Anzahl)
+- Canvas HTML Elementerstellen und die einzelnen Balken
+berechnen
+***********************************************************/
+function show_statistics(content, data) {
+	var box = document.createElement("div");
+	box.setAttribute("class", "info-box");
+	box.innerText = "Hauptverzeichnisse: "+data["FOLDER_COUNT"]+"\n"+
+	"Dateien (alle): "+data["FILE_COUNT"]+"\n"+
+	"Dateitypen (alle): "+data["FILE_TYPES_COUNT"];
+	var canvas = document.createElement("canvas");
+	canvas.setAttribute("class", "statistic-canvas");
+	box.appendChild(canvas);
+	content.appendChild(box);
+	canvas.width = canvas.offsetWidth;
+	canvas.height = canvas.offsetHeight;
+	const img_bar = data["IMG_COUNT"]*((canvas.height-30)/data["FILE_COUNT"]);
+	const music_bar = data["MUSIC_COUNT"]*((canvas.height-30)/data["FILE_COUNT"]);
+	const video_bar = data["VIDEO_COUNT"]*((canvas.height-30)/data["FILE_COUNT"]);
+	const pdf_bar = data["PDF_COUNT"]*((canvas.height-30)/data["FILE_COUNT"]);
+	const others_bar = data["OTHERS_COUNT"]*((canvas.height-30)/data["FILE_COUNT"]);
+	var ctx = canvas.getContext("2d");
+	ctx.fillStyle = "rgba(192,192,192,1)";
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	ctx.beginPath();
+	ctx.fillStyle = "rgba(0,0,0,1)";
+	ctx.rect(0, 0, canvas.width, 3);
+	ctx.rect(0, canvas.height-15, canvas.width, 3);
+	ctx.fill();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.fillStyle = "rgba(120,50,70,1)";
+	ctx.rect(5, (canvas.height-(img_bar)-15), 50, img_bar);
+	ctx.fill();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.fillStyle = "rgba(120,150,70,1)";
+	ctx.rect(70, (canvas.height-(music_bar)-15), 50, music_bar);
+	ctx.fill();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.fillStyle = "rgba(120,150,170,1)";
+	ctx.rect(135, (canvas.height-(video_bar)-15), 50, video_bar);
+	ctx.fill();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.fillStyle = "rgba(120,150,170,1)";
+	ctx.rect(200, (canvas.height-(pdf_bar)-15), 50, pdf_bar);
+	ctx.fill();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.fillStyle = "rgba(170,100,100,1)";
+	ctx.rect(265, (canvas.height-(others_bar)-15), 50, others_bar);
+	ctx.fill();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.font = "11px calibri";
+	ctx.fillStyle = "rgba(0,0,0,1)";
+	ctx.fillText(data["IMG_COUNT"], 5, (13+canvas.height-30-img_bar));
+	ctx.fillText(data["MUSIC_COUNT"], 70, (13+canvas.height-30-music_bar));
+	ctx.fillText(data["VIDEO_COUNT"], 135, (13+canvas.height-30-video_bar));
+	ctx.fillText(data["PDF_COUNT"], 200, (13+canvas.height-30-pdf_bar));
+	ctx.fillText(data["OTHERS_COUNT"], 265, (13+canvas.height-30-others_bar));
+	ctx.fillText("Bilder", 15, (canvas.height-2));
+	ctx.fillText("Musik", 82.5, (canvas.height-2));
+	ctx.fillText("Video", 147.5, (canvas.height-2));
+	ctx.fillText("PDF", 217, (canvas.height-2));
+	ctx.fillText("Sonstiges", 267, (canvas.height-2));
+	ctx.fill();
+	ctx.closePath();
+};
+
+/***********************************************************
+Kreisdiagramm verwendeter Speicher:
+- 
+***********************************************************/
+function show_storage(content, data) {
+	var box = document.createElement("div");
+	box.setAttribute("class", "info-box");
+	var canvas = document.createElement("canvas");
+	canvas.setAttribute("class", "storage-canvas");
+	box.appendChild(canvas);
+	content.appendChild(box);
+	canvas.width = canvas.offsetWidth;
+	canvas.height = canvas.offsetHeight;
+	var ctx = canvas.getContext("2d");
+	ctx.fillStyle = "rgba(192,192,192,1)";
+	ctx.clearRect(0, 0, canvas.width, canvas.height);
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	ctx.beginPath();
+	ctx.strokeStyle = "rgba(100,100,100,1)";
+	ctx.lineWidth = 30;
+	ctx.arc((canvas.width/2), (canvas.height/2), (canvas.height/2-15), 0, (Math.PI*2), false);
+	ctx.stroke();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.strokeStyle = "rgba(37,150,43,1)";
+	ctx.lineWidth = 30;
+	ctx.arc((canvas.width/2), (canvas.height/2), (canvas.height/2-15), -((Math.PI*2)/4), ((data["STORAGE_SYSTEM_BYTES"]+data["STORAGE_FILES_BYTES"]+data["STORAGE_TOTAL_FREE_BYTES"])*((Math.PI*2)/data["STORAGE_TOTAL_BYTES"]))-((Math.PI*2)/4), false);
+	ctx.stroke();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.strokeStyle = "rgba(3,71,134,1)";
+	ctx.lineWidth = 30;
+	ctx.arc((canvas.width/2), (canvas.height/2), (canvas.height/2-15), -((Math.PI*2)/4), ((data["STORAGE_SYSTEM_BYTES"]+data["STORAGE_FILES_BYTES"])*((Math.PI*2)/data["STORAGE_TOTAL_BYTES"]))-((Math.PI*2)/4), false);
+	ctx.stroke();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.strokeStyle = "rgba(100,90,150,1)";
+	ctx.lineWidth = 30;
+	ctx.arc((canvas.width/2), (canvas.height/2), (canvas.height/2-15), -((Math.PI*2)/4), (data["STORAGE_SYSTEM_BYTES"]*((Math.PI*2)/data["STORAGE_TOTAL_BYTES"]))-((Math.PI*2)/4), false);
+	ctx.stroke();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.font = "16px calibri";
+	ctx.fillStyle = "rgba(0,0,0,1)";
+	ctx.fillText("Speicher total:", (canvas.width/2)-100, (canvas.height/2)-24);
+	ctx.fillText(data["STORAGE_TOTAL_VALUE"].toString()+" "+data["STORAGE_TOTAL_TYPE"], (canvas.width/2)+15, (canvas.height/2)-24);
+	ctx.fillText("Speicher frei:", (canvas.width/2)-100, (canvas.height/2)-8);
+	ctx.fillText(data["STORAGE_TOTAL_FREE_VALUE"].toString()+" "+data["STORAGE_TOTAL_FREE_TYPE"], (canvas.width/2)+15, (canvas.height/2)-8);
+	ctx.fillText("System:", (canvas.width/2)-100, (canvas.height/2)+8);
+	ctx.fillText(data["STORAGE_SYSTEM_VALUE"].toString()+" "+data["STORAGE_SYSTEM_TYPE"], (canvas.width/2)+15, (canvas.height/2)+8);
+	ctx.fillText("Eigene Dateien:", (canvas.width/2)-100, (canvas.height/2)+24);
+	ctx.fillText(data["STORAGE_FILES_VALUE"].toString()+" "+data["STORAGE_FILES_TYPE"], (canvas.width/2)+15, (canvas.height/2)+24);
+	ctx.fill();
+	ctx.closePath();
+};
+
+/***********************************************************
 Hauptverzeichnisse aus der Datenbank ermitteln
 ***********************************************************/
 function get_master_folders(mode) {
@@ -491,12 +664,10 @@ function remove_master_folder_success(id, data) {
 };
 
 /***********************************************************
-Hervorhebung des Angeklickten Menüpunkts:
-- Angeklickten Menüpunkt merken
-- Angeklickten Menüpunkt farbig hinterlegen
-- Farbige hinterlegung anderer Menüpunkte entfernen
+Farbige hinterlegung der Menüpunkte (hauptverzeichnisse)
+entfernen
 ***********************************************************/
-function select_master_folder(id) {
+function unselect_master_folder() {
 	var folders = document.getElementsByClassName("menue-content");
 	var folder_names = document.getElementsByClassName("menue-content-text");
 	for(let i = 0; i < folders.length; i++) {
@@ -505,6 +676,16 @@ function select_master_folder(id) {
 			folder_names[i].classList.add("color-10");
 		}
 	}
+	document.getElementsByClassName("dashboard-button")[0].classList.remove("dashboard-active");
+};
+
+/***********************************************************
+Hervorhebung des Angeklickten Menüpunkts:
+- Angeklickten Menüpunkt merken
+- Angeklickten Menüpunkt farbig hinterlegen
+***********************************************************/
+function select_master_folder(id) {
+	unselect_master_folder();
 	document.getElementById("master-folder-"+id).classList.add("menue-content-active");
 	document.getElementById("master-folder-"+id).childNodes[0].classList.remove("color-10");
 	window.selected_master_folder = parseInt(id);
@@ -574,7 +755,7 @@ function get_master_folder_contents_success(data) {
 		} else if(data[i]["TYPE"].toUpperCase() == "MP3" || data[i]["TYPE"].toUpperCase() == "WAV" || data[i]["TYPE"].toUpperCase() == "WMA" || data[i]["TYPE"].toUpperCase() == "FLAC" || data[i]["TYPE"].toUpperCase() == "OGG") {
 			data_block.setAttribute("ondblclick", "show_audio('"+data[i]["NAME_S"].substring(1)+"', '"+data[i]["NAME_O"]+"')");
 			img.setAttribute("src", "./images/audio_1.png");
-		} else if(data[i]["TYPE"].toUpperCase() == "MP4" || data[i]["TYPE"].toUpperCase() == "WEBM" || data[i]["TYPE"].toUpperCase() == "AVI") {
+		} else if(data[i]["TYPE"].toUpperCase() == "MP4" || data[i]["TYPE"].toUpperCase() == "WEBM" || data[i]["TYPE"].toUpperCase() == "AVI" || data[i]["TYPE"].toUpperCase() == "MKV" || data[i]["TYPE"].toUpperCase() == "MPG") {
 			data_block.setAttribute("ondblclick", "show_video('"+data[i]["NAME_S"].substring(1)+"')");
 			img.setAttribute("src", "./images/video_1.png");
 		} else if(data[i]["TYPE"].toUpperCase() == "PDF") {
@@ -618,6 +799,14 @@ function show_close() {
 	var box = document.getElementById("view-box");
 	box.classList.remove("flex");
 	box.innerHTML = "";
+	if(window.duration_box != null) {
+		window.duration_box.removeEventListener("click", duration_progress);
+		window.duration_box = null;
+	}
+	if(window.duration != null) {
+		clearInterval(window.duration);
+		window.duration = null;
+	}
 };
 
 /***********************************************************
@@ -635,6 +824,7 @@ function play() {
 		document.getElementById("pause").classList.add("none");
 		document.getElementById("play").classList.remove("none");
 		clearInterval(window.duration);
+		window.duration = null;
 	}
 	document.getElementById("play").classList.add("none");
 	document.getElementById("pause").classList.remove("none");
@@ -673,11 +863,12 @@ function duration_update() {
 /***********************************************************
 Fortschrittsbalken vor-/zurückspulen
 ***********************************************************/
-function duration_progress() {
+function duration_progress(e) {
 	var barSize = document.getElementById("player-duration-box").offsetWidth;
+	document.getElementById("duration").style.width = e.offsetX+"px";
 	if(!document.getElementById("audio").ended) {
 		var file = document.getElementById("audio");
-		var mouseX = event.pageX-barSize-(barSize/7);
+		var mouseX = e.offsetX;
 		var newtime = mouseX*file.duration/barSize;
 		file.currentTime = newtime;
 		document.getElementById("duration").style.width = mouseX + "px";
@@ -741,7 +932,6 @@ function show_audio(file, name) {
 	var duration_box = document.createElement("div");
 	duration_box.setAttribute("class", "player-duration-box");
 	duration_box.setAttribute("id", "player-duration-box");
-	duration_box.setAttribute("onclick", "duration_progress()");
 	var duration_line = document.createElement("div");
 	duration_line.setAttribute("class", "player-duration-line");
 	duration_line.setAttribute("id", "duration");
@@ -750,6 +940,8 @@ function show_audio(file, name) {
 	container.appendChild(file_title);
 	container.appendChild(track);
 	box.appendChild(container);
+	window.duration_box = duration_box;
+	window.duration_box.addEventListener('click', (e) => { duration_progress(e); }, false);
 };
 
 /***********************************************************
@@ -1099,7 +1291,7 @@ function build_data_view(data) {
 	} else if(data["TYPE"].toUpperCase() == "MP3" || data["TYPE"].toUpperCase() == "WAV" || data["TYPE"].toUpperCase() == "WMA" || data["TYPE"].toUpperCase() == "FLAC" || data["TYPE"].toUpperCase() == "OGG") {
 		data_block.setAttribute("ondblclick", "show_audio('"+data["NAME_S"].substring(1)+"', '"+data["NAME_O"]+"')");
 		img.setAttribute("src", "./images/audio_1.png");
-	} else if(data["TYPE"].toUpperCase() == "MP4" || data["TYPE"].toUpperCase() == "WEBM" || data["TYPE"].toUpperCase() == "AVI") {
+	} else if(data["TYPE"].toUpperCase() == "MP4" || data["TYPE"].toUpperCase() == "WEBM" || data["TYPE"].toUpperCase() == "AVI" || data["TYPE"].toUpperCase() == "MKV" || data["TYPE"].toUpperCase() == "MPG") {
 		data_block.setAttribute("ondblclick", "show_video('"+data["NAME_S"].substring(1)+"')");
 		img.setAttribute("src", "./images/video_1.png");
 	} else if(data["TYPE"].toUpperCase() == "PDF") {
