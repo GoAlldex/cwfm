@@ -1,12 +1,21 @@
 <?php
+/***********************************************************
+Entfernen eines Hauptverzeichnisses
+***********************************************************/
 if(isset($_POST['remove'])) {
 	include("./db.php");
     $data = array();
 	$error = false;
 	$msg = array();
 
+    /***********************************************************
+    Übermittelte Parameter von JavaScript
+    ***********************************************************/
     $id = trim($_POST["id"]);
 
+    /***********************************************************
+    JavaScript Parameter Prüfen
+    ***********************************************************/
     if(strlen($id) == 0) {
         $error = true;
         $msg["ERROR"][] = "Ungültiger Ordner (1)";
@@ -27,6 +36,12 @@ if(isset($_POST['remove'])) {
         }
     }
 
+    /***********************************************************
+    Wenn keine Übermittlungsfehler existieren:
+    - Entfernen der Datenbankeinträge der Dateien die im
+    Hauptverzeichnis gespeichert sind
+    - Entfernen der Dateien es Hauptverzeichnisses vom Server
+    ***********************************************************/
     if(!$error) {
         $sql = $pdo->prepare("SELECT id, folder_id, file_name_original, file_name_saved, file_path, file_type FROM files WHERE folder_id = ".$id);
         $sql->execute();
@@ -59,6 +74,10 @@ if(isset($_POST['remove'])) {
         unset($i, $s);
     }
 
+    /***********************************************************
+    Wenn keine Übermittlungsfehler existieren:
+    - Entfernen des Datenbankeintrags für das Hauptverzeichnis
+    ***********************************************************/
     if(!$error) {
         $folder = $pdo->prepare("DELETE FROM folders WHERE id = ".$id);
         $folder->execute();
@@ -68,6 +87,9 @@ if(isset($_POST['remove'])) {
         }
     }
 
+    /***********************************************************
+    Rückgabe der Daten an JavaScript
+    ***********************************************************/
     if(!$error) {
 		echo JSON_ENCODE($data);
 	} else {

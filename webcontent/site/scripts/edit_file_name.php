@@ -1,13 +1,22 @@
 <?php
+/***********************************************************
+Umbennen einer Datei
+***********************************************************/
 if(isset($_POST['save'])) {
 	include("./db.php");
     $data = array();
 	$error = false;
 	$msg = array();
 
+    /***********************************************************
+    Übermittelte Parameter von JavaScript
+    ***********************************************************/
     $id = trim($_POST["id"]);
     $name = trim($_POST["name"]);
 
+    /***********************************************************
+    JavaScript Parameter Prüfen
+    ***********************************************************/
     if(strlen($id) == 0) {
         $error = true;
         $msg["ERROR"][] = "Ungültiger Datei (1)";
@@ -33,6 +42,10 @@ if(isset($_POST['save'])) {
         $msg["ERROR"][] = "Bitte geben Sie einen Dateinamen ein";
     }
 
+    /***********************************************************
+    Wenn keine Übermittlungsfehler existieren speichere den
+    neuen Dateinamen in der Datenbank
+    ***********************************************************/
     if(!$error) {
         $statement = $pdo->prepare("UPDATE files SET file_name_original = :file_name_original WHERE id = ".$id);
 		$result = $statement->execute(array("file_name_original" => $name));
@@ -42,6 +55,9 @@ if(isset($_POST['save'])) {
 		}
     }
 
+    /***********************************************************
+    Rückgabe der Daten an JavaScript
+    ***********************************************************/
     if(!$error) {
 		echo JSON_ENCODE($data);
 	} else {

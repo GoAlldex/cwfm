@@ -1,11 +1,16 @@
 <?php
-error_reporting(E_ALL);
+/***********************************************************
+Speichern einer hochgeladenen Datei auf dem Server
+***********************************************************/
 if(isset($_POST['save'])) {
 	include("./db.php");
 	$error = false;
 	$msg = array();
     $file_path = "../upload/";
 
+    /***********************************************************
+    Übermittelte Parameter von JavaScript
+    ***********************************************************/
     $id = trim($_POST["id"]);
     if(isset($_FILES['file'])) {
 		$file = basename($_FILES["file"]["name"]);
@@ -14,6 +19,9 @@ if(isset($_POST['save'])) {
 		$file = "";
 	}
 
+    /***********************************************************
+    JavaScript Parameter Prüfen
+    ***********************************************************/
     if(strlen($id) == 0) {
         $error = true;
         $msg["ERROR"][] = "Ungültiger Ordner (1)";
@@ -45,6 +53,12 @@ if(isset($_POST['save'])) {
 		unset($comp, $index, $sname);
 	}
 
+    /***********************************************************
+    Zufälliger Dateiname:
+    - Zufälligen Dateinamen generieren
+    - Prüfen ob dieser Dateiname schon existiert
+    - Wenn Dateiname schon vorhanden rufe dich selbst nochmal auf
+    ***********************************************************/
     function random_file($end, $file_path) {
         $rnd = bin2hex(random_bytes(15));
         if(!is_file($file_path.$rnd.".".$end)) {
@@ -54,6 +68,10 @@ if(isset($_POST['save'])) {
         }
     };
 
+    /***********************************************************
+    Wenn keine Übermittlungsfehler existieren:
+    - Erstelle Upload Verzeichnis falls noch nicht vorhanden
+    ***********************************************************/
     if(!$error) {
         $name = random_file($end, $file_path);
         if(!is_dir($file_path)) {
@@ -64,6 +82,10 @@ if(isset($_POST['save'])) {
 		}
     }
 
+    /***********************************************************
+    Wenn keine Übermittlungsfehler existieren:
+    - Speichere die Datei im Upload Verzeichnis
+    ***********************************************************/
     if(!$error) {
         if(!move_uploaded_file($_FILES['file']['tmp_name'], $file_path.$name)) {
             $error = true;
@@ -71,6 +93,12 @@ if(isset($_POST['save'])) {
         }
     }
 
+    /***********************************************************
+    Wenn keine Übermittlungsfehler existieren:
+    - Speichere die Datei Eigenschaften in der Datenbank
+    - Speichere die Datei Eigenschaften für die Rückgabe an
+    JavaScript
+    ***********************************************************/
     if(!$error) {
         $comp = explode(".", $_FILES['file']['name']);
         unset($comp[count($comp)-1]);
@@ -98,6 +126,9 @@ if(isset($_POST['save'])) {
         }
     }
 
+    /***********************************************************
+    Rückgabe der Daten an JavaScript
+    ***********************************************************/
     if(!$error) {
 		echo JSON_ENCODE($data);
 	} else {

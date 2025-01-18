@@ -1,5 +1,17 @@
+/***********************************************************
+Anzeigen von Fehlermeldungen die vom Server zurückkommen
+(PHP Meldungen error online...)
+***********************************************************/
 var debug_mode = true;
+
+/***********************************************************
+Hauptverzeichnis
+***********************************************************/
 var selected_master_folder = null;
+
+/***********************************************************
+Datei Upload Variablen und Listener
+***********************************************************/
 var tmp_files_folder = Array();
 var tmp_files = null;
 var drop = document;
@@ -11,10 +23,21 @@ var dropzone = document.getElementById("drag-drop");
 dropzone.addEventListener('drop', upload_files, false);
 var x = null;
 var y = null;
+
+/***********************************************************
+Kontextmenü Listener
+***********************************************************/
 document.addEventListener('mousemove', onMouseUpdate, false);
 document.addEventListener('click', closeContext, false);
+
+/***********************************************************
+Audio wiedergeben
+***********************************************************/
 var duration = null;
 
+/***********************************************************
+Nachrichtenbox schließen
+***********************************************************/
 function msg_off() {
 	var conf_box = document.getElementById("msg-box");
 	if(conf_box.classList.contains("flex")) {
@@ -23,6 +46,12 @@ function msg_off() {
 	}
 };
 
+/***********************************************************
+Nachrichtenbox
+- Backend Fehler Anzeigen
+- Sonstige Benachrichtungen die in Funktionen definiert
+wurden
+***********************************************************/
 function msg_on(type, title, body, buttons, button_fu) {
 	var conf_box = document.getElementById("msg-box");
 	if(conf_box.classList.contains("flex")) {
@@ -59,17 +88,9 @@ function msg_on(type, title, body, buttons, button_fu) {
 	conf_box.classList.add("flex");
 };
 
-function check_JSON(JSON_parse) {
-	if(typeof JSON_parse != 'string')
-		JSON_parse = JSON.stringify(JSON_parse);
-	try {
-		JSON.parse(JSON_parse);
-		return true;
-	} catch(e) {
-		return false;
-	}
-};
-
+/***********************************************************
+Lade Nachrichtenbox
+***********************************************************/
 function load(msg) {
 	var conf_box = document.getElementById("msg-box");
 	if(conf_box.classList.contains("flex")) {
@@ -91,6 +112,9 @@ function load(msg) {
 	conf_box.classList.add("flex");
 };
 
+/***********************************************************
+Speichern erforgreich Nachrichtenbox
+***********************************************************/
 function save(msg) {
 	var conf_box = document.getElementById("msg-box");
 	if(conf_box.classList.contains("flex")) {
@@ -113,6 +137,14 @@ function save(msg) {
 	conf_box.classList.add("flex");
 };
 
+/***********************************************************
+Aufruf von Funktionen die in der Backendabfrage gefordert
+wurden:
+- Funktion mit ermittelten Backendaten aufrufen
+- Funktion mit ermittelten Backendaten und übergabe
+Parametern aufrufen
+- Funktion mit übergabe Parametern aufrufen
+***********************************************************/
 function manage_functions(function_name, data) {
 	switch(function_name[1]) {
 		default:
@@ -146,7 +178,28 @@ function manage_functions(function_name, data) {
 	};
 };
 
+/***********************************************************
+Prüfen ob vom Backend Daten im JSON Format zurückgegeben
+wurden
+***********************************************************/
+function check_JSON(JSON_parse) {
+	if(typeof JSON_parse != 'string')
+		JSON_parse = JSON.stringify(JSON_parse);
+	try {
+		JSON.parse(JSON_parse);
+		return true;
+	} catch(e) {
+		return false;
+	}
+};
 
+/***********************************************************
+Backend Abfrage:
+- Aufruf Nachrichtenxox bei PHP Fehlern (Abgefangene Fehler
+als auch Skriptfehler und Verbindungsfehler)
+- Aufruf von folge Funktionen nach der Backendabfrage (mit
+durchschleifen von Parametern und ermittelten Daten)
+***********************************************************/
 function main_backend_request(script, functions, data) {
 	$.ajax({
 		url: "./"+script+".php",
@@ -245,6 +298,9 @@ function main_backend_request(script, functions, data) {
 	});
 };
 
+/***********************************************************
+Hauptverzeichnisse aus der Datenbank ermitteln
+***********************************************************/
 function get_master_folders(mode) {
 	load("Liste Verzeichnisse...");
 	var data = new FormData();
@@ -257,6 +313,12 @@ function get_master_folders(mode) {
 	main_backend_request("./scripts/get_master_folders", fu, data);
 };
 
+/***********************************************************
+Anzeigen der Hauptverzeichnisse als Menüpunkt:
+- Wenn die variable mode nicht 0 entspricht handelt es sich
+um ein neulade Befehl, das zuletzt ausgewählte
+Hauptverzeichnis wird wieder farbig hinterlegt
+***********************************************************/
 function get_master_folders_success(mode, data) {
 	var menue_box = document.getElementById("menue-content");
 	menue_box.innerHTML = "";
@@ -291,6 +353,10 @@ function get_master_folders_success(mode, data) {
 	msg_off();
 };
 
+/***********************************************************
+Nachrichtenbox mit Eingabefeld um ein neues Hauptverzeichnis
+anzulegen
+***********************************************************/
 function new_master_folder() {
 	var type = "Error";
 	var title = "Neuer Ordner";
@@ -305,6 +371,9 @@ function new_master_folder() {
 	msg_on(type, title, body, buttons, button_fu);
 };
 
+/***********************************************************
+Neues Hauptverzeichnis in der Datenbank speichern
+***********************************************************/
 function save_master_folder() {
 	var name = document.getElementsByName("folder-name")[0].value;
 	var data = new FormData();
@@ -317,11 +386,19 @@ function save_master_folder() {
 	main_backend_request("./scripts/save_master_folder", fu, data);
 };
 
+/***********************************************************
+Hauptverzeichnis erfolgreich angelegt Benachrichtigung und
+neu laden der Hauptverzeichnisse
+***********************************************************/
 function save_master_folder_success() {
 	save("Neuer Ordner erfolgreich gespeichert");
 	setTimeout(function () { get_master_folders(1); }, 3000);
 };
 
+/***********************************************************
+Nachrichtenbox und Eingabefelder um das Hauptverzeichnis
+umzubenennen
+***********************************************************/
 function ask_edit_master_folder(id) {
 	var folder_name = document.getElementById("master-folder-"+id).childNodes[0].innerText;
 	var type = "Error";
@@ -337,6 +414,9 @@ function ask_edit_master_folder(id) {
 	msg_on(type, title, body, buttons, button_fu);
 };
 
+/***********************************************************
+Hauptverzeichnis umbenennung in der Datenbank speichern
+***********************************************************/
 function edit_master_folder(id) {
 	var name = document.getElementsByName("folder-name")[0].value;
 	var data = new FormData();
@@ -350,11 +430,18 @@ function edit_master_folder(id) {
 	main_backend_request("./scripts/edit_master_folder", fu, data);
 };
 
+/***********************************************************
+Haptverzeichnis Erforgreich umbenannt Benachrichtung und
+neu laden der Hauptverzeichnisse
+***********************************************************/
 function edit_master_folder_success() {
 	save("Neuer Ordnername erfolgreich gespeichert");
 	setTimeout(function () { get_master_folders(1); }, 3000);
 };
 
+/***********************************************************
+Nachrichtenbox Hauptverzeichnis entfernen
+***********************************************************/
 function ask_remove_master_folder(id) {
 	var type = "Error";
 	var title = "Ordner entfernen";
@@ -369,6 +456,12 @@ function ask_remove_master_folder(id) {
 	msg_on(type, title, body, buttons, button_fu);
 };
 
+/***********************************************************
+Hauptverzeichnis und enthaltene Dateine entfernen:
+- Dateien auf Webserver entfernen
+- Datenbankeinträge für Dateien entfernen
+- Datenbankeintrag des Hauptverzeichnisses entfernen
+***********************************************************/
 function remove_master_folder(id) {
 	load("Entferne Hauptverzeichnis...");
 	var data = new FormData();
@@ -382,6 +475,10 @@ function remove_master_folder(id) {
 	main_backend_request("./scripts/remove_master_folder", fu, data);
 };
 
+/***********************************************************
+Hauptverzeichnis entfernt Benachrichtigung und entfernen
+des HTML Menüpunkts
+***********************************************************/
 function remove_master_folder_success(id, data) {
 	save("Hauptverzeichnis "+data[0]+" mit "+data[1]+" Datein vollständig entfernt");
 	var rm = document.getElementById("master-folder-"+id);
@@ -393,6 +490,12 @@ function remove_master_folder_success(id, data) {
 	setTimeout(function () { msg_off(); }, 3000);
 };
 
+/***********************************************************
+Hervorhebung des Angeklickten Menüpunkts:
+- Angeklickten Menüpunkt merken
+- Angeklickten Menüpunkt farbig hinterlegen
+- Farbige hinterlegung anderer Menüpunkte entfernen
+***********************************************************/
 function select_master_folder(id) {
 	var folders = document.getElementsByClassName("menue-content");
 	var folder_names = document.getElementsByClassName("menue-content-text");
@@ -408,6 +511,9 @@ function select_master_folder(id) {
 	get_master_folder_contents(id);
 };
 
+/***********************************************************
+Holen der Dateien von einem Hauptverzeichnis
+***********************************************************/
 function get_master_folder_contents(id) {
 	load("Lade Dateien...");
 	var data = new FormData();
@@ -420,18 +526,35 @@ function get_master_folder_contents(id) {
 	main_backend_request("./scripts/get_master_folder_contents", fu, data);
 };
 
+/***********************************************************
+Umrechnung der Dateigröße in:
+- Byte, Kilobyte, Megabyte, Gigabyte, Terrabyte
+***********************************************************/
 function fsize(file_size) {
 	var fs_count = 0;
 	var fs = file_size;
 	while(fs > 1024) {
 		fs_count++;
 		fs = fs/1024;
+		if(fs_count == 4) {
+			break;
+		}
 	}
 	fs = Math.round(fs*100)/100;
 	var fs_name = Array("B", "KB", "MB", "GB", "TB");
 	return fs.toString()+" "+fs_name[fs_count];
 };
 
+/***********************************************************
+Datei im Hauptverzeichnis anzeigen:
+- Miniaturansicht nach Dateityp
+- Bilder haben als Miniatur Icon immer ihr eigenes Bild
+- Alle Dateien die keine Bilder sind werden mit Icons
+nach Dateityp versehen (Audio, Video, PDF, sonstige Formate)
+- Dateitypen wie Bilder, Audio, Video erhalten eine
+Doppelklick Funktion um die Datei anzuzeigen andere
+Dateitypen sind von der Anzeige ausgeschlossen
+***********************************************************/
 function get_master_folder_contents_success(data) {
 	var content = document.getElementById("content");
 	content.innerHTML = "";
@@ -472,6 +595,9 @@ function get_master_folder_contents_success(data) {
 	msg_off();
 };
 
+/***********************************************************
+Datei Anzeige öffnen und schließen Button erzeugen
+***********************************************************/
 function generate_box() {
 	var box = document.getElementById("view-box");
 	box.classList.add("flex");
@@ -485,6 +611,9 @@ function generate_box() {
 	return box;
 };
 
+/***********************************************************
+Datei Anzeige schließen
+***********************************************************/
 function show_close() {
 	var box = document.getElementById("view-box");
 	box.classList.remove("flex");
@@ -559,6 +688,9 @@ function duration_progress() {
 	}
 };
 
+/***********************************************************
+Anzeigen eines Bilds (nach Doppelklick)
+***********************************************************/
 function show_image(file) {
 	var box = generate_box();
 	var img = document.createElement("img");
@@ -567,6 +699,12 @@ function show_image(file) {
 	box.appendChild(img);
 };
 
+/***********************************************************
+Anzeigen des Audioplayers (nach Doppelklick)
+- Play Button
+- Pause Button
+- Fortschrittsbalken
+***********************************************************/
 function show_audio(file, name) {
 	var box = generate_box();
 	var container = document.createElement("div");
@@ -614,6 +752,9 @@ function show_audio(file, name) {
 	box.appendChild(container);
 };
 
+/***********************************************************
+Anzeigen eines Videos (HTML5 Player) (nach Doppelklick)
+***********************************************************/
 function show_video(file) {
 	var box = generate_box();
 	var video = document.createElement("video");
@@ -625,6 +766,9 @@ function show_video(file) {
 	box.appendChild(video);
 };
 
+/***********************************************************
+Anzeigen einer PDF Datei in Iframe (nach Doppelklick)
+***********************************************************/
 function show_pdf(file) {
 	var box = generate_box();
 	var pdf = document.createElement("iframe");
@@ -633,6 +777,9 @@ function show_pdf(file) {
 	box.appendChild(pdf);
 };
 
+/***********************************************************
+Nachrichtenbox aufruf Datei umbenennen (Kontextmenü Button)
+***********************************************************/
 function ask_rename_file(id, name) {
 	closeContext();
 	var type = "Error";
@@ -648,6 +795,10 @@ function ask_rename_file(id, name) {
 	msg_on(type, title, body, buttons, button_fu);
 };
 
+/***********************************************************
+Nachrichtenbox Datei umbenennen nach klick auf speichern
+in der Datenbank umbenennen
+***********************************************************/
 function rename_file(id) {
 	var name = document.getElementsByName("file-name")[0].value;
 	load("Speichere neuen Dateinamen...");
@@ -663,20 +814,24 @@ function rename_file(id) {
 	main_backend_request("./scripts/edit_file_name", fu, data);
 };
 
+/***********************************************************
+Nachrichtenbox Datei umbenennen nach dem speichern in der
+Datenbank
+- Benachrichtigung erfogreich gespeichert
+- Angezeigte Datei im HTML Dokument umbennen
+***********************************************************/
 function rename_file_success(id, data) {
 	document.getElementById("file-"+id).childNodes[1].innerText = data["NAME_O"]+"."+data["TYPE"];
 	save("Neuer Dateiname erfolgreich gespeichert");
 	setTimeout(function () { msg_off(); }, 3000);
 };
 
-function blobToBase64(blob) {
-	return new Promise((resolve, _) => {
-	  const reader = new FileReader();
-	  reader.onloadend = () => resolve(reader.result);
-	  reader.readAsDataURL(blob);
-	});
-  };
-
+/***********************************************************
+Herunterladen einer Datei (Kontextmenü Button)
+- Datei in JavaScript laden
+- Dateinamen ändern (Serverdateiname zu Anzeigename)
+- Datei ohne Popup/Neune Tab herunterladen
+***********************************************************/
 async function download_file(name, path, type) {
 	closeContext();
 	const response = await fetch(new URL(path , document.baseURI).href)
@@ -698,6 +853,9 @@ async function download_file(name, path, type) {
 	}
 };
 
+/***********************************************************
+Nachrichtenbox entfernen einer Datei (Kontextmenü Button)
+***********************************************************/
 function ask_remove_file(id, name) {
 	closeContext();
 	var type = "Error";
@@ -712,6 +870,9 @@ function ask_remove_file(id, name) {
 	msg_on(type, title, body, buttons, button_fu);
 };
 
+/***********************************************************
+Datei von der Datenbank und aus dem Verzeichnis entfernen
+***********************************************************/
 function remove_file(id) {
 	load("Entferne Datei...");
 	var data = new FormData();
@@ -725,12 +886,22 @@ function remove_file(id) {
 	main_backend_request("./scripts/remove_file", fu, data);
 };
 
+/***********************************************************
+Meldung Datei erforgreich entfernt und das HTML Element
+der Datei entfernen
+***********************************************************/
 function remove_file_success(id, data) {
 	document.getElementById("file-"+id).parentNode.removeChild(document.getElementById("file-"+id));
 	save("Datei erfolgreich entfernt");
 	setTimeout(function () { msg_off(); }, 3000);
 };
 
+/***********************************************************
+Kontextmenü Anzeige/Funktionsaufrufe
+- Datei Umbenennen
+- Datei Herunterladen
+- Datei entfernen
+***********************************************************/
 function show_context_menue(id, name, path, type) {
 	var msg_box = document.getElementById("msg-box");
 	msg_box.setAttribute("class", "context-menue");
@@ -755,6 +926,9 @@ function show_context_menue(id, name, path, type) {
 	msg_box.appendChild(menue_3);
 };
 
+/***********************************************************
+Kontextmenü schließen
+***********************************************************/
 function closeContext() {
 	msg_box = document.getElementById("msg-box");
 	if(msg_box.classList.contains("context-menue")) {
@@ -765,32 +939,56 @@ function closeContext() {
 	}
 };
 
+/***********************************************************
+Mauszeigerbewegung
+***********************************************************/
 function onMouseUpdate(e) {
 	window.x = e.pageX;
 	window.y = e.pageY;
 };
 
+/***********************************************************
+Rechtsklick Aufruf das das Standard Kontextmenü nicht
+auftaucht
+***********************************************************/
 function show_context_false(elem) {
 	elem.addEventListener('contextmenu', function(e) {
 		e.preventDefault();
 	}, false);
 };
 
+/***********************************************************
+Verhindern, dass das Browser Kontextmenü erscheint bei
+Rechtsklick auf eine Angezeigten Datei
+***********************************************************/
 function preventDefaults(e) {
 	e.preventDefault();
 	e.stopPropagation();
 };
 
+/***********************************************************
+Drag & Drop Bereich anzeigen (nur wenn ein Verzeichnis
+gewählt ist)
+***********************************************************/
 function highlight(e) {
 	if(window.selected_master_folder != null) {
 		document.getElementById("drag-drop").classList.add('flex');
 	}
 };
 
+/***********************************************************
+Drag & Drop Bereich ausblenden
+***********************************************************/
 function unhighlight(e) {
 	document.getElementById("drag-drop").classList.remove('flex');
 };
 
+/***********************************************************
+Die abgelegten Dateien als HTML Elemente anzeigen
+- Öffnen der Warteschlange (HTML)
+- Icons der Dateien Anzeigen
+- Upload starten 
+***********************************************************/
 function upload_files(data_files) {
 	if(window.selected_master_folder != null) {
 		var data = data_files.dataTransfer;
@@ -826,6 +1024,9 @@ function upload_files(data_files) {
 	}
 };
 
+/***********************************************************
+Datei auf dem Server ablegen und in der Datenbank speichern
+***********************************************************/
 function upload_process() {
 	set_active_upload();
 	var data = new FormData();
@@ -839,6 +1040,12 @@ function upload_process() {
 	main_backend_request("./scripts/save_upload_file", fu, data);
 };
 
+/***********************************************************
+Nach Ablage einer Datei auf dem Server prüfen ob sich
+andere Dateien in der Warteschlange befinden, wenn sich noch
+Dateien in der Warteschlange befinden starte den Upload für
+die nächste Datei, wenn nicht schließe den Upload Bereich
+***********************************************************/
 function upload_process_success(data) {
 	if(parseInt(data["FID"]) == parseInt(window.selected_master_folder)) {
 		build_data_view(data);
@@ -858,11 +1065,23 @@ function upload_process_success(data) {
 	}
 };
 
+/***********************************************************
+Das erste Element des Uploads farbig markieren (aktuell
+aktiver upload)
+***********************************************************/
 function set_active_upload() {
 	var upload_box = document.getElementById("upload-process");
 	upload_box.firstChild.classList.add("active-upload");
 };
 
+/***********************************************************
+Datei im Ordner Anzeigen nach dem Upload:
+- Prüfen ob das gerade angezeigte Hauptverzeichnis dem
+Upload Verzeichnis entspricht
+- Trifft die erste Bedingung zu erstelle die Miniaturansicht
+- Siehe get_master_folder_contents_success() für weitere
+Angaben
+***********************************************************/
 function build_data_view(data) {
 	var content = document.getElementById("content");
 	var data_block = document.createElement("div");

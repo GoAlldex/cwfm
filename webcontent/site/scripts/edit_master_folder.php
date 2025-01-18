@@ -1,13 +1,22 @@
 <?php
+/***********************************************************
+Umbennen eines Hauptverzeichnisses
+***********************************************************/
 if(isset($_POST['save'])) {
 	include("./db.php");
     $data = array();
 	$error = false;
 	$msg = array();
 
+    /***********************************************************
+    Übermittelte Parameter von JavaScript
+    ***********************************************************/
     $id = trim($_POST["id"]);
     $name = trim($_POST["name"]);
 
+    /***********************************************************
+    JavaScript Parameter Prüfen
+    ***********************************************************/
     if(strlen($id) == 0) {
         $error = true;
         $msg["ERROR"][] = "Ungültiger Ordner (1)";
@@ -32,6 +41,10 @@ if(isset($_POST['save'])) {
         $msg["ERROR"][] = "Bitte geben Sie einen Ordnernamen ein";
     }
 
+    /***********************************************************
+    Wenn keine Übermittlungsfehler existieren speichere den
+    neuen Verzeichnisnamen in der Datenbank
+    ***********************************************************/
     if(!$error) {
         $statement = $pdo->prepare("UPDATE folders SET folder_name = :folder_name WHERE id = ".$id);
 		$result = $statement->execute(array("folder_name" => $name));
@@ -41,6 +54,9 @@ if(isset($_POST['save'])) {
 		}
     }
 
+    /***********************************************************
+    Rückgabe der Daten an JavaScript
+    ***********************************************************/
     if(!$error) {
 		echo JSON_ENCODE("TRUE");
 	} else {

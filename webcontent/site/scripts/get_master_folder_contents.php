@@ -1,12 +1,21 @@
 <?php
+/***********************************************************
+Gespeicherte Dateien eines hauptverzeichnisses ermitteln
+***********************************************************/
 if(isset($_POST['get'])) {
 	include("./db.php");
     $data = array();
 	$error = false;
 	$msg = array();
 
+    /***********************************************************
+    Übermittelte Parameter von JavaScript
+    ***********************************************************/
     $id = trim($_POST["id"]);
 
+    /***********************************************************
+    JavaScript Parameter Prüfen
+    ***********************************************************/
     if(strlen($id) == 0) {
         $error = true;
         $msg["ERROR"][] = "Ungültiger Ordner (1)";
@@ -25,6 +34,10 @@ if(isset($_POST['get'])) {
         }
     }
 
+    /***********************************************************
+    Wenn keine Übermittlungsfehler existieren:
+    - Hole alle in der Datenbank aufgelisteten Dateieigenschaften
+    ***********************************************************/
     if(!$error) {
         $sql = $pdo->prepare("SELECT id, folder_id, file_name_original, file_name_saved, file_path, file_type, file_size, creation_date FROM files ORDER BY file_name_original ASC");
         $sql->execute();
@@ -43,6 +56,9 @@ if(isset($_POST['get'])) {
         unset($i);
     }
 
+    /***********************************************************
+    Rückgabe der Daten an JavaScript
+    ***********************************************************/
     if(!$error) {
 		echo JSON_ENCODE($data);
 	} else {
