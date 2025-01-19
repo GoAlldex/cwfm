@@ -801,6 +801,7 @@ function get_master_folder_contents_success(data) {
 		} else {
 			img.setAttribute("src", "./images/file_1.png");
 		}
+		img.setAttribute("draggable", "false");
 		wrap.appendChild(img);
 		data_block.appendChild(wrap);
 		var name = document.createElement("div");
@@ -1338,6 +1339,7 @@ function build_data_view(data) {
 	} else {
 		img.setAttribute("src", "./images/file_1.png");
 	}
+	img.setAttribute("draggable", "false");
 	wrap.appendChild(img);
 	data_block.appendChild(wrap);
 	var name = document.createElement("div");
