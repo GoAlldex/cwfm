@@ -1,6 +1,6 @@
 <?php
 /***********************************************************
-Dashboard CWFM Eigenschaften
+Dateien in ein anders Hauptverzeichnis verschieben
 ***********************************************************/
 if(isset($_POST['save'])) {
 	include("./db.php");

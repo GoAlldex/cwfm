@@ -48,6 +48,11 @@ document.addEventListener('mouseup', stop_move_files, false);
 document.addEventListener('mousemove', update_move_files, false);
 
 /***********************************************************
+Datei kopieren
+***********************************************************/
+var copy_files = null;
+
+/***********************************************************
 Nachrichtenbox schließen
 ***********************************************************/
 function msg_off() {
@@ -1420,6 +1425,56 @@ function onKeyDown(e) {
 			}
 		}
 	}
+	if(typeof window.map[17] != "undefined" && typeof window.map[67] != "undefined") {
+		if(window.map[17] == true && window.map[67] == true) {
+			e.preventDefault();
+			if(window.marked_boxes != null) {
+				window.copy_files = null;
+				window.copy_files = Array();
+				for(const [id, value] of Object.entries(window.marked_boxes)) {
+					window.copy_files.push(id);
+					window.marked_boxes[id].classList.remove("marked-box");
+				}
+				window.marked_boxes = null;
+				window.map[67] = false;
+				window.map[17] = false;
+				save("Datei(en) kopiert");
+				setTimeout(function() { msg_off(); }, 3000);
+			}
+		}
+	}
+	if(typeof window.map[17] != "undefined" && typeof window.map[86] != "undefined") {
+		if(window.map[17] == true && window.map[86] == true) {
+			e.preventDefault();
+			if(window.copy_files != null && window.selected_master_folder != null) {
+				copy();
+				window.map[86] = false;
+				window.map[17] = false;
+			}
+		}
+	}
+};
+
+function copy() {
+	load("Kopiere Dateien in Verzeichnis...");
+	var data = new FormData();
+	data.append("save", 1);
+	data.append("folder", window.selected_master_folder);
+	data.append("ids", JSON.stringify(window.copy_files));
+	var fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "copy_success";
+	fu[0][1] = 0;
+	main_backend_request("./scripts/save_copy_files", fu, data);
+};
+
+function copy_success(data) {
+	window.copy_files = null;
+	for(let i = 0; i < data.length; i++) {
+		build_data_view(data[i]);
+	}
+	save("Kopieren erfolgreich");
+	setTimeout(function() { msg_off(); }, 3000);
 };
 
 /***********************************************************
@@ -1502,6 +1557,9 @@ function stop_move_files(e) {
 	}
 };
 
+/***********************************************************
+Backend Anfrage Dateien verschieben
+***********************************************************/
 function transact_files() {
 	load("Verschiebe Dateien...")
 	var ids = Array();
@@ -1519,6 +1577,10 @@ function transact_files() {
 	main_backend_request("./scripts/save_transact_files", fu, data);
 };
 
+/***********************************************************
+Nach erfogreichem verschieben, die Dateien aus dem
+ausgewählten Hauptverzeichnis entfernen
+***********************************************************/
 function transact_files_success() {
 	if(window.marked_boxes != null) {
 		for(const [id, value] of Object.entries(window.marked_boxes)) {
