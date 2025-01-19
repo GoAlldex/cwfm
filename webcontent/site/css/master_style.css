@@ -720,6 +720,64 @@ Bildschirm Ansicht
 		background-color: rgba(76,43,55,1);
 	}
 
+	.marked-box {
+		background-color: rgba(100, 100, 100, 1);
+	}
+
+	.file-move {
+		display: none;
+		position: relative;
+		margin: 0;
+		padding: 0;
+		height: 6rem;
+		width: 6rem;
+		border-radius: 0.15rem;
+		box-shadow: 0 0 0.25rem rgba(0,0,0,1);
+		z-index: 99;
+	}
+
+	.file-move-img {
+		display: block;
+		position: absolute;
+		margin: 0;
+		padding: 0;
+		height: 6rem;
+		width: 6rem;
+		border-radius: 0.15rem;
+	}
+
+	.file-move-wrapper {
+		display: flex;
+		position: absolute;
+		margin: 0;
+		padding: 0;
+		height: 6rem;
+		width: 6rem;
+		border-radius: 0.15rem;
+		justify-content: center;
+		align-items: flex-end;
+	}
+
+	.file-move-text {
+		display: block;
+		padding: 0.15rem;
+		border-radius: 0.15rem;
+		background-color: rgba(0,131,125,1);
+		color: rgba(255,255,255,1);
+		font-size: 1rem;
+	}
+
+	.no-mark {
+		-ms-user-select: None;
+		-moz-user-select: None;
+		-webkit-user-select: None;
+		user-select: None;
+	}
+
+	.border-menue {
+		border: 3px dashed rgba(0,134,125,1);
+	}
+
     .scroll-y {
 		overflow-y: auto;
 	}

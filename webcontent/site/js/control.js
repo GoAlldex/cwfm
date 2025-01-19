@@ -27,7 +27,6 @@ var y = null;
 /***********************************************************
 Kontextmenü Listener
 ***********************************************************/
-document.addEventListener('mousemove', onMouseUpdate, false);
 document.addEventListener('click', closeContext, false);
 
 /***********************************************************
@@ -35,6 +34,18 @@ Audio wiedergeben
 ***********************************************************/
 var duration = null;
 var duration_box = null;
+
+/***********************************************************
+Datei markieren und verschieben
+***********************************************************/
+var marked_boxes = null;
+var map = Object();
+var drop_files = null;
+document.addEventListener("keydown", onKeyDown, false);
+document.addEventListener("keyup", onKeyUp, false);
+document.addEventListener("mousedown", start_move_files, false);
+document.addEventListener('mouseup', stop_move_files, false);
+document.addEventListener('mousemove', update_move_files, false);
 
 /***********************************************************
 Nachrichtenbox schließen
@@ -307,6 +318,7 @@ Dashboard:
 ***********************************************************/
 function dashboard() {
 	load("Lade Dashboard...");
+	window.marked_boxes = null;
 	window.selected_master_folder = null;
 	unselect_master_folder();
 	document.getElementsByClassName("dashboard-button")[0].classList.add("dashboard-active");
@@ -417,7 +429,11 @@ function show_statistics(content, data) {
 
 /***********************************************************
 Kreisdiagramm verwendeter Speicher:
-- 
+- Speicher das vom System verbraucht wird (lila)
+- Speicher der für die hochgeladenen Dateien verwendet wird
+(blau)
+- Freier Speicher (grün)
+- Gesamter Speicher (überdeckt) (grau)
 ***********************************************************/
 function show_storage(content, data) {
 	var box = document.createElement("div");
@@ -455,6 +471,26 @@ function show_storage(content, data) {
 	ctx.lineWidth = 30;
 	ctx.arc((canvas.width/2), (canvas.height/2), (canvas.height/2-15), -((Math.PI*2)/4), (data["STORAGE_SYSTEM_BYTES"]*((Math.PI*2)/data["STORAGE_TOTAL_BYTES"]))-((Math.PI*2)/4), false);
 	ctx.stroke();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.fillStyle = "rgba(100,100,100,1)";
+	ctx.rect((canvas.width/2)-115, (canvas.height/2)-34, 10, 10);
+	ctx.fill();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.fillStyle = "rgba(37,150,43,1)";
+	ctx.rect((canvas.width/2)-115, (canvas.height/2)-18, 10, 10);
+	ctx.fill();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.fillStyle = "rgba(100,90,150,1)";
+	ctx.rect((canvas.width/2)-115, (canvas.height/2)-2, 10, 10);
+	ctx.fill();
+	ctx.closePath();
+	ctx.beginPath();
+	ctx.fillStyle = "rgba(3,71,134,1)";
+	ctx.rect((canvas.width/2)-115, (canvas.height/2)+14, 10, 10);
+	ctx.fill();
 	ctx.closePath();
 	ctx.beginPath();
 	ctx.font = "16px calibri";
@@ -744,7 +780,8 @@ function get_master_folder_contents_success(data) {
 		data_block.setAttribute("class", "data-view");
 		data_block.setAttribute("title", "Name: "+data[i]["NAME_O"]+"\nDateityp: "+data[i]["TYPE"].toUpperCase()+"\nGröße: "+fsize(data[i]["SIZE"])+"\nErstellzeit: "+data[i]["CREATION_DATE"]);
 		data_block.setAttribute("id", "file-"+data[i]["ID"]);
-		data_block.setAttribute("oncontextmenu", "show_context_menue("+data[i]["ID"]+", '"+data[i]["NAME_O"]+"', '"+data[i]["NAME_S"].substring(1)+"', '"+data[i]["TYPE"]+"')");
+		data_block.setAttribute("onclick", "file_mark("+data[i]["ID"]+")");
+		data_block.setAttribute("oncontextmenu", "get_position(this, event);show_context_menue("+data[i]["ID"]+", '"+data[i]["NAME_O"]+"', '"+data[i]["NAME_S"].substring(1)+"', '"+data[i]["TYPE"]+"')");
 		var wrap = document.createElement("div");
 		wrap.setAttribute("class", "data-view-wrap");
 		var img = document.createElement("img");
@@ -1121,7 +1158,7 @@ function show_context_menue(id, name, path, type) {
 /***********************************************************
 Kontextmenü schließen
 ***********************************************************/
-function closeContext() {
+function closeContext(e) {
 	msg_box = document.getElementById("msg-box");
 	if(msg_box.classList.contains("context-menue")) {
 		msg_box.classList.remove("context-menue");
@@ -1132,9 +1169,9 @@ function closeContext() {
 };
 
 /***********************************************************
-Mauszeigerbewegung
+Kontextmenü Mausposition
 ***********************************************************/
-function onMouseUpdate(e) {
+function get_position(element, e) {
 	window.x = e.pageX;
 	window.y = e.pageY;
 };
@@ -1280,7 +1317,8 @@ function build_data_view(data) {
 	data_block.setAttribute("class", "data-view");
 	data_block.setAttribute("title", "Name: "+data["NAME_O"]+"\nDateityp: "+data["TYPE"].toUpperCase()+"\nGröße: "+fsize(data["SIZE"])+"\nErstellzeit: "+data["CREATION_DATE"]);
 	data_block.setAttribute("id", "file-"+data["ID"]);
-	data_block.setAttribute("oncontextmenu", "show_context_menue("+data["ID"]+", '"+data["NAME_O"]+"', '"+data["NAME_S"].substring(1)+"', '"+data["TYPE"]+"')");
+	data_block.setAttribute("onclick", "file_mark("+data["ID"]+")");
+	data_block.setAttribute("oncontextmenu", "get_position(this, event);show_context_menue("+data["ID"]+", '"+data["NAME_O"]+"', '"+data["NAME_S"].substring(1)+"', '"+data["TYPE"]+"')");
 	var wrap = document.createElement("div");
 	wrap.setAttribute("class", "data-view-wrap");
 	var img = document.createElement("img");
@@ -1309,3 +1347,199 @@ function build_data_view(data) {
 	content.appendChild(data_block);
 	show_context_false(data_block);
 };
+
+/***********************************************************
+Markiere/demarkiere eine einzelne Datei, wenn STRG+Klick
+auf Datei erfolgt, wenn STRG nicht gedrückt ist mache nichts
+***********************************************************/
+function file_mark(id) {
+	if(typeof window.map[17] != "undefined" && window.map[17] == true) {
+		if(window.marked_boxes == null) {
+			window.marked_boxes = Object();
+		}
+		if(typeof window.marked_boxes[id] != "undefined") {
+			window.marked_boxes[id].classList.remove("marked-box");
+			delete window.marked_boxes[id];
+			if(Object.keys(window.marked_boxes) == 0) {
+				window.marked_boxes = null;
+			}
+		} else {
+			window.marked_boxes[id] = document.getElementById("file-"+id);
+			window.marked_boxes[id].classList.add("marked-box");
+		}
+	}
+};
+
+/***********************************************************
+Shortkeys:
+- STRG+A markiere alle Dateien
+- STRG+D downloade alle markierten Dateien und demarkiere
+***********************************************************/
+function onKeyDown(e) {
+	window.map[e.keyCode] = e.type == "keydown";
+	if(typeof window.map[17] != "undefined" && typeof window.map[65] != "undefined") {
+		if(window.map[17] == true && window.map[65] == true) {
+			e.preventDefault();
+			window.marked_boxes = Object();
+			var data_box = document.getElementsByClassName("data-view");
+			for(let i = 0; i < data_box.length; i++) {
+				var comp = data_box[i].getAttribute("id").split("-");
+				var id = parseInt(comp[1]);
+				window.marked_boxes[id] = data_box[i];
+				window.marked_boxes[id].classList.remove("marked-box");
+				window.marked_boxes[id].classList.add("marked-box");
+			}
+			window.map[65] = false;
+			window.map[17] = false;
+		}
+	}
+	if(typeof window.map[17] != "undefined" && typeof window.map[68] != "undefined") {
+		if(window.map[17] == true && window.map[68] == true) {
+			e.preventDefault();
+			if(window.marked_boxes != null) {
+				for(const [id, value] of Object.entries(window.marked_boxes)) {
+					var path = window.marked_boxes[id].childNodes[0].childNodes[0].src;
+					var comp = window.marked_boxes[id].childNodes[1].innerText.split(".");
+					var type = comp[(comp.length-1)];
+					var name = "";
+					for(let i = 0; i < (comp.length-1); i++) {
+						if(i == 0) {
+							name += comp[i];
+						} else {
+							name += "."+comp[i];
+						}
+					}
+					download_file(name, path, type);
+					window.marked_boxes[id].classList.remove("marked-box");
+				}
+				window.marked_boxes = null;
+				window.map[68] = false;
+				window.map[17] = false;
+			}
+		}
+	}
+};
+
+/***********************************************************
+Prüfe ob eine Taste nicht mehr gedrückt ist
+***********************************************************/
+function onKeyUp(e) {
+	window.map[e.keyCode] = e.type == "keydown";
+};
+
+/***********************************************************
+Verschieben von markierten Dateien:
+- Visuelles anzeigen des Verschiebevorgangs
+- Menüpunkt markieren, wenn die Dateien über ein Hauptverzeichnis
+gehalten werden (mit Ausnahme gerade aktives Verzeichnis) und
+Menüpunkt merken
+***********************************************************/
+function start_move_files(e) {
+	if(window.marked_boxes != null) {
+		document.body.classList.add("no-mark");
+		var move_box = document.getElementById("file-move");
+		var x = e.pageX;
+		var y = e.pageY;
+		var count = Object.keys(window.marked_boxes).length;
+		move_box.children[1].children[0].innerText = "+"+count;
+		move_box.style = "left: "+(x+10)+"px; top: "+(y+10)+"px;";
+		move_box.classList.add("block");
+		var menue_content = document.getElementsByClassName("menue-content");
+		for(let i = 0; i < menue_content.length; i++) {
+			var id = menue_content[i].getAttribute("id");
+			if(("master-folder-"+window.selected_master_folder.toString()) != id) {
+				var comp = id.split("-");
+				$(menue_content[i]).bind({
+					'mouseenter': function(){
+						window.drop_files = parseInt(comp[2]);
+						if(!menue_content[i].classList.contains("border-menue")) {
+							menue_content[i].classList.add("border-menue");
+						}
+					}, 
+					'mouseleave': function(){
+						window.drop_files = null;
+						if(menue_content[i].classList.contains("border-menue")) {
+							menue_content[i].classList.remove("border-menue");
+						}
+					}
+				});
+			}
+		}
+	}
+};
+
+/***********************************************************
+Verschieben von markierten Dateien beenden:
+- Visuelles anzeigen des Verschiebevorgangs beenden
+- Wurden die Dateien über ein Hauptverzeichnis gehalten,
+werden die Dateien in das Verzeichnis verschoben
+- Menüpunkt markieren Event entfernen und markierten
+Menüpunkt demarkieren
+***********************************************************/
+function stop_move_files(e) {
+	var move_box = document.getElementById("file-move");
+	if(window.marked_boxes != null && move_box.classList.contains("block")) {
+		document.body.classList.remove("no-mark");
+		var move_box = document.getElementById("file-move");
+		move_box.classList.remove("block");
+		move_box.removeAttribute("style");
+		move_box.children[1].children[0].innerText = "+0";
+		if(window.drop_files != null) {
+			transact_files();
+		}
+		var menue_content = document.getElementsByClassName("menue-content");
+		for(let i = 0; i < menue_content.length; i++) {
+			var id = menue_content[i].getAttribute("id");
+			if(("master-folder-"+window.selected_master_folder.toString()) != id) {
+				if(menue_content[i].classList.contains("border-menue")) {
+					menue_content[i].classList.remove("border-menue");
+				}
+				$(menue_content[i]).unbind();
+			}
+		}
+	}
+};
+
+function transact_files() {
+	load("Verschiebe Dateien...")
+	var ids = Array();
+	for(const [id, value] of Object.entries(window.marked_boxes)) {
+		ids.push(id);
+	}
+	var data = new FormData();
+	data.append("save", 1);
+	data.append("folder", window.drop_files);
+	data.append("ids", JSON.stringify(ids));
+	var fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "transact_files_success";
+	fu[0][1] = 0;
+	main_backend_request("./scripts/save_transact_files", fu, data);
+};
+
+function transact_files_success() {
+	if(window.marked_boxes != null) {
+		for(const [id, value] of Object.entries(window.marked_boxes)) {
+			window.marked_boxes[id].classList.remove("marked-box");
+			window.marked_boxes[id].parentNode.removeChild(window.marked_boxes[id]);
+		}
+		window.marked_boxes = null;
+	}
+	window.drop_files = null;
+	save("Dateien erfolgreich verschoben");
+	setTimeout(function() { msg_off(); }, 3000);
+};
+
+/***********************************************************
+Verschieben von markierten Dateien Maus Position updaten
+und Position der Visuelen Darstellung anpassen
+***********************************************************/
+function update_move_files(e) {
+	var move_box = document.getElementById("file-move");
+	if(window.marked_boxes != null && move_box.classList.contains("block")) {
+		var x = e.pageX;
+		var y = e.pageY;
+		move_box.style = "left: "+(x+10)+"px; top: "+(y+10)+"px;";
+	}
+};
+

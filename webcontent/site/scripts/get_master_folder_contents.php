@@ -39,7 +39,7 @@ if(isset($_POST['get'])) {
     - Hole alle in der Datenbank aufgelisteten Dateieigenschaften
     ***********************************************************/
     if(!$error) {
-        $sql = $pdo->prepare("SELECT id, folder_id, file_name_original, file_name_saved, file_path, file_type, file_size, creation_date FROM files ORDER BY file_name_original ASC");
+        $sql = $pdo->prepare("SELECT id, folder_id, file_name_original, file_name_saved, file_path, file_type, file_size, creation_date FROM files WHERE folder_id = ".$id." ORDER BY file_name_original ASC");
         $sql->execute();
         $result = $sql->fetchAll(PDO::FETCH_ASSOC);
         $i = 0;

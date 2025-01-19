@@ -1,6 +1,6 @@
 <?php
 /***********************************************************
-
+Dashboard CWFM Eigenschaften
 ***********************************************************/
 if(isset($_POST['get'])) {
 	include("./db.php");
@@ -31,6 +31,18 @@ if(isset($_POST['get'])) {
         $data["PDF_COUNT"] = 0;
         $data["OTHERS_COUNT"] = 0;
         $data["FILE_TYPES_COUNT"] = 0;
+        $data["STORAGE_TOTAL_TYPE"] = "B";
+        $data["STORAGE_TOTAL_VALUE"] = 0;
+        $data["STORAGE_TOTAL_BYTES"] = 0;
+        $data["STORAGE_TOTAL_FREE_TYPE"] = "B";
+        $data["STORAGE_TOTAL_FREE_VALUE"] = 0;
+        $data["STORAGE_TOTAL_FREE_BYTES"] = 0;
+        $data["STORAGE_FILES_TYPE"] = "B";
+        $data["STORAGE_FILES_VALUE"] = 0;
+        $data["STORAGE_FILES_BYTES"] = 0;
+        $data["STORAGE_SYSTEM_TYPE"] = "B";
+        $data["STORAGE_SYSTEM_VALUE"] = 0;
+        $data["STORAGE_SYSTEM_BYTES"] = 0;
         $sql = "SELECT COUNT(id) AS folder_count FROM folders";
         $result = $pdo->query($sql)->fetch();
         if($result) {
@@ -61,16 +73,21 @@ if(isset($_POST['get'])) {
         }
         $data["FILE_TYPES_COUNT"] = $i;
         unset($i);
-        $comp = get_storage(disk_total_space("/"));
-        $data["STORAGE_TOTAL_TYPE"] = $comp[0];
-        $data["STORAGE_TOTAL_VALUE"] = round($comp[1]*100)/100;
-        $data["STORAGE_TOTAL_BYTES"] = $comp[2];
-        unset($comp);
-        $comp = get_storage(disk_free_space("/"));
-        $data["STORAGE_TOTAL_FREE_TYPE"] = $comp[0];
-        $data["STORAGE_TOTAL_FREE_VALUE"] = round($comp[1]*100)/100;
-        $data["STORAGE_TOTAL_FREE_BYTES"] = $comp[2];
-        unset($comp);
+        $storage = 0;
+        if(($storage = disk_total_space("/")) != 0) {
+            $comp = get_storage($storage);
+            $data["STORAGE_TOTAL_TYPE"] = $comp[0];
+            $data["STORAGE_TOTAL_VALUE"] = round($comp[1]*100)/100;
+            $data["STORAGE_TOTAL_BYTES"] = $comp[2];
+            unset($comp);
+        }
+        if(($storage = disk_free_space("/")) != 0) {
+            $comp = get_storage($storage);
+            $data["STORAGE_TOTAL_FREE_TYPE"] = $comp[0];
+            $data["STORAGE_TOTAL_FREE_VALUE"] = round($comp[1]*100)/100;
+            $data["STORAGE_TOTAL_FREE_BYTES"] = $comp[2];
+            unset($comp);
+        }
         $size = 0;
         $sql = $pdo->prepare("SELECT file_size FROM files");
         $sql->execute();
@@ -78,12 +95,15 @@ if(isset($_POST['get'])) {
         foreach($result as $index => $row) {
             $size += $row["file_size"];
         }
-        $comp = get_storage($size);
-        $data["STORAGE_FILES_TYPE"] = $comp[0];
-        $data["STORAGE_FILES_VALUE"] = round($comp[1]*100)/100;
-        $data["STORAGE_FILES_BYTES"] = $comp[2];
-        unset($comp);
-        $comp = get_storage((disk_total_space("/")-disk_free_space("/")-$size));
+        if($size != 0) {
+            $comp = get_storage($size);
+            $data["STORAGE_FILES_TYPE"] = $comp[0];
+            $data["STORAGE_FILES_VALUE"] = round($comp[1]*100)/100;
+            $data["STORAGE_FILES_BYTES"] = $comp[2];
+            unset($comp);
+        }
+        if(($storage = (disk_total_space("/")-disk_free_space("/")-$size)) != 0)
+        $comp = get_storage($storage);
         $data["STORAGE_SYSTEM_TYPE"] = $comp[0];
         $data["STORAGE_SYSTEM_VALUE"] = round($comp[1]*100)/100;
         $data["STORAGE_SYSTEM_BYTES"] = $comp[2];
