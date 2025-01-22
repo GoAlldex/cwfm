@@ -694,7 +694,7 @@ Hauptverzeichnis entfernt Benachrichtigung und entfernen
 des HTML Menüpunkts
 ***********************************************************/
 function remove_master_folder_success(id, data) {
-	save("Hauptverzeichnis "+data[0]+" mit "+data[1]+" Datein vollständig entfernt");
+	save("Hauptverzeichnis "+data[0]+" mit "+data[1]+" Dateien vollständig entfernt");
 	var rm = document.getElementById("master-folder-"+id);
 	rm.parentElement.removeChild(rm);
 	if(window.selected_master_folder != null && window.selected_master_folder == parseInt(id)) {
@@ -791,6 +791,9 @@ function get_master_folder_contents_success(data) {
 		wrap.setAttribute("class", "data-view-wrap");
 		var img = document.createElement("img");
 		img.setAttribute("class", "data-view-preview");
+		if(data[i]["TYPE"] == "") {
+			comp[1] = "data";
+		}
 		if(data[i]["TYPE"].toUpperCase() == "PNG" || data[i]["TYPE"].toUpperCase() == "JPG" || data[i]["TYPE"].toUpperCase() == "JPEG" || data[i]["TYPE"].toUpperCase() == "GIF" || data[i]["TYPE"].toUpperCase() == "WEBP") {
 			data_block.setAttribute("ondblclick", "show_image('"+data[i]["NAME_S"].substring(1)+"')");
 			img.setAttribute("src", data[i]["NAME_S"].substring(1));
@@ -1235,6 +1238,9 @@ function upload_files(data_files) {
 		content.setAttribute("style", "max-height: calc(100% - 3.25rem);");
 		for(let i = 0; i < window.tmp_files.length; i++) {
 			var comp = window.tmp_files[i]["type"].split("/");
+			if(typeof comp[1] == "undefined") {
+				comp[1] = "data";
+			}
 			var upload_item = document.createElement("div");
 			upload_item.setAttribute("class", "upload-item");
 			upload_item.setAttribute("title", "Entfernen");
@@ -1476,19 +1482,14 @@ function insert_marked_files(e) {
 
 /***********************************************************
 Shortkeys:
-- STRG+E entferne markierte Dateien
+- STRG+E abfragen ob Dateien entfernt werden sollen
 ***********************************************************/
 function remove_marked_files(e) {
 	if(typeof window.map[17] != "undefined" && typeof window.map[69] != "undefined") {
 		if(window.map[17] == true && window.map[69] == true) {
 			e.preventDefault();
 			if(window.marked_boxes != null) {
-				var remove_files = Array();
-				for(const [id, value] of Object.entries(window.marked_boxes)) {
-					remove_files.push(id);
-				}
-				remove_marked_files_db(remove_files);
-				window.marked_boxes = null;
+				ask_remove_marked_files(Object.entries(window.marked_boxes).length);
 				window.map[69] = false;
 				window.map[17] = false;
 			}
@@ -1517,10 +1518,32 @@ function onKeyUp(e) {
 };
 
 /***********************************************************
+Nachrichtenbox markierte Dateien entfernen
+***********************************************************/
+function ask_remove_marked_files(count) {
+	closeContext();
+	var type = "Error";
+	var title = "Datei entfernen";
+	var body = 'Sind Sie sicher, das Sie die ausgewählten <span class="bold color-5">'+count+' Dateien entfernen</span> möchten?';
+	var buttons = Array();
+	buttons.push("Entfernen");
+	buttons.push("Abbrechen");
+	var button_fu = Array();
+	button_fu.push("remove_marked_files_db()");
+	button_fu.push("msg_off()");
+	msg_on(type, title, body, buttons, button_fu);
+};
+
+/***********************************************************
 Entfernen der markierten Dateien vom Server/DB
 ***********************************************************/
-function remove_marked_files_db(remove_files) {
+function remove_marked_files_db() {
 	load("Entferne Dateien...");
+	var remove_files = Array();
+	for(const [id, value] of Object.entries(window.marked_boxes)) {
+		remove_files.push(id);
+	}
+	window.marked_boxes = null;
 	var data = new FormData();
 	data.append("remove", 1);
 	data.append("ids", JSON.stringify(remove_files));
@@ -1580,7 +1603,7 @@ gehalten werden (mit Ausnahme gerade aktives Verzeichnis) und
 Menüpunkt merken
 ***********************************************************/
 function start_move_files(e) {
-	if(window.marked_boxes != null) {
+	if(window.marked_boxes != null && !document.getElementById("msg-box").classList.contains("flex")) {
 		document.body.classList.add("no-mark");
 		var move_box = document.getElementById("file-move");
 		var x = e.pageX;
@@ -1694,4 +1717,3 @@ function update_move_files(e) {
 		move_box.style = "left: "+(x+10)+"px; top: "+(y+10)+"px;";
 	}
 };
-
