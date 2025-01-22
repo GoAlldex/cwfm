@@ -1380,10 +1380,8 @@ function file_mark(id) {
 /***********************************************************
 Shortkeys:
 - STRG+A markiere alle Dateien
-- STRG+D downloade alle markierten Dateien und demarkiere
 ***********************************************************/
-function onKeyDown(e) {
-	window.map[e.keyCode] = e.type == "keydown";
+function mark_all_files(e) {
 	if(typeof window.map[17] != "undefined" && typeof window.map[65] != "undefined") {
 		if(window.map[17] == true && window.map[65] == true) {
 			e.preventDefault();
@@ -1400,6 +1398,13 @@ function onKeyDown(e) {
 			window.map[17] = false;
 		}
 	}
+};
+
+/***********************************************************
+Shortkeys:
+- STRG+D downloade alle markierten Dateien und demarkiere
+***********************************************************/
+function download_marked_files(e) {
 	if(typeof window.map[17] != "undefined" && typeof window.map[68] != "undefined") {
 		if(window.map[17] == true && window.map[68] == true) {
 			e.preventDefault();
@@ -1425,6 +1430,13 @@ function onKeyDown(e) {
 			}
 		}
 	}
+};
+
+/***********************************************************
+Shortkeys:
+- STRG+C kopiere alle markierten Dateien und demarkiere
+***********************************************************/
+function copy_marked_files(e) {
 	if(typeof window.map[17] != "undefined" && typeof window.map[67] != "undefined") {
 		if(window.map[17] == true && window.map[67] == true) {
 			e.preventDefault();
@@ -1443,6 +1455,13 @@ function onKeyDown(e) {
 			}
 		}
 	}
+};
+
+/***********************************************************
+Shortkeys:
+- STRG+V füge kopierte Dateien ein
+***********************************************************/
+function insert_marked_files(e) {
 	if(typeof window.map[17] != "undefined" && typeof window.map[86] != "undefined") {
 		if(window.map[17] == true && window.map[86] == true) {
 			e.preventDefault();
@@ -1455,6 +1474,78 @@ function onKeyDown(e) {
 	}
 };
 
+/***********************************************************
+Shortkeys:
+- STRG+E entferne markierte Dateien
+***********************************************************/
+function remove_marked_files(e) {
+	if(typeof window.map[17] != "undefined" && typeof window.map[69] != "undefined") {
+		if(window.map[17] == true && window.map[69] == true) {
+			e.preventDefault();
+			if(window.marked_boxes != null) {
+				var remove_files = Array();
+				for(const [id, value] of Object.entries(window.marked_boxes)) {
+					remove_files.push(id);
+				}
+				remove_marked_files_db(remove_files);
+				window.marked_boxes = null;
+				window.map[69] = false;
+				window.map[17] = false;
+			}
+		}
+	}
+};
+
+/***********************************************************
+Shortkeys:
+- Aufruf der Shortkey Funktionen, nach Tastendruck
+***********************************************************/
+function onKeyDown(e) {
+	window.map[e.keyCode] = e.type == "keydown";
+	mark_all_files(e);
+	download_marked_files(e);
+	copy_marked_files(e);
+	insert_marked_files(e);
+	remove_marked_files(e);
+};
+
+/***********************************************************
+Prüfe ob eine Taste nicht mehr gedrückt ist
+***********************************************************/
+function onKeyUp(e) {
+	window.map[e.keyCode] = e.type == "keydown";
+};
+
+/***********************************************************
+Entfernen der markierten Dateien vom Server/DB
+***********************************************************/
+function remove_marked_files_db(remove_files) {
+	load("Entferne Dateien...");
+	var data = new FormData();
+	data.append("remove", 1);
+	data.append("ids", JSON.stringify(remove_files));
+	var fu = Array();
+	fu[0] = Array();
+	fu[0][0] = "remove_marked_files_db_success";
+	fu[0][1] = 0;
+	main_backend_request("./scripts/remove_marked_files", fu, data);
+};
+
+/***********************************************************
+Entfernen erfolgreich Meldung und entfernen der Datei Kacheln
+von der UI
+***********************************************************/
+function remove_marked_files_db_success(data) {
+	for(let i = 0; i < data.length; i++) {
+		document.getElementById("file-"+data[i].toString()).parentNode.removeChild(document.getElementById("file-"+data[i].toString()));
+	}
+	save("Entfernen erfolgreich");
+	setTimeout(function() { msg_off(); }, 3000);
+};
+
+/***********************************************************
+Einfügen der kopierten Dateien 
+***********************************************************/
 function copy() {
 	load("Kopiere Dateien in Verzeichnis...");
 	var data = new FormData();
@@ -1468,6 +1559,10 @@ function copy() {
 	main_backend_request("./scripts/save_copy_files", fu, data);
 };
 
+/***********************************************************
+Wenn das kopieren erfogreich war zeige an das kopiert wurde
+und erstelle die Datei Kacheln in der UI
+***********************************************************/
 function copy_success(data) {
 	window.copy_files = null;
 	for(let i = 0; i < data.length; i++) {
@@ -1475,13 +1570,6 @@ function copy_success(data) {
 	}
 	save("Kopieren erfolgreich");
 	setTimeout(function() { msg_off(); }, 3000);
-};
-
-/***********************************************************
-Prüfe ob eine Taste nicht mehr gedrückt ist
-***********************************************************/
-function onKeyUp(e) {
-	window.map[e.keyCode] = e.type == "keydown";
 };
 
 /***********************************************************

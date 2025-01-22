@@ -35,7 +35,7 @@ Docker ist auch möglich (siehe Ohne Docker).
 -   Webserver: Den Ordner site im Ordner webcontent in den Ordner vom Webserver (htdocs/) kopieren
 -   Datenbankverbindung im Skript webcontent/site/scripts/db.php ändern
 
-## Anwendungs Details
+# Anwendungs Details
 -   Dashboard: Balkendiagramm (Dateistatistik)
 -   Dashboard: Kreisdiagramm (Speichernutzung)
 -   Anlegen/Umbenennen/Entfernen von Verzeichnissen
@@ -50,6 +50,7 @@ Docker ist auch möglich (siehe Ohne Docker).
 -   STRG + D alle markierten Dateien herunterladen
 -   STRG + C alle markierten Dateien kopieren (anwendungsintern)
 -   STRG + V alle zuvor mit STRG + C kopierten Dateien hinzufügen (anwendungsintern)
+-   STRG + E entferne alle markierten Dateien
 -   Drag & Drop von markierten Dateien in ein anderes Verzeichnis (anwendungsintern, verschieben)
 
 ## Hinweise für die Nutzung

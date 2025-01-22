@@ -18,19 +18,19 @@ if(isset($_POST['remove'])) {
     ***********************************************************/
     if(strlen($id) == 0) {
         $error = true;
-        $msg["ERROR"][] = "Ungültiger Datei (1)";
+        $msg["ERROR"][] = "Ungültige Datei (1)";
     } else if(!is_numeric($id)) {
         $error = true;
-        $msg["ERROR"][] = "Ungültiger Datei (2)";
+        $msg["ERROR"][] = "Ungültige Datei (2)";
     } else if(intval($id) == 0) {
         $error = true;
-        $msg["ERROR"][] = "Ungültiger Datei (3)";
+        $msg["ERROR"][] = "Ungültige Datei (3)";
     } else {
         $sql = "SELECT id, file_name_saved, file_path FROM files WHERE id = ".$id;
         $result = $pdo->query($sql)->fetch();
         if(!$result) {
             $error = true;
-            $msg["ERROR"][] = "Ungültiger Datei (4)";
+            $msg["ERROR"][] = "Ungültige Datei (4)";
         } else {
             $file = $result["file_path"].$result["file_name_saved"];
         }
