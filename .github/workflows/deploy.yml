@@ -16,7 +16,7 @@ jobs:
       - name: Run profile
         run: docker compose --profile prod up -d
       - name: CWFM_server Terminal
-        run: docker run --rm -it --entrypoint /bin/sh CWFM_server
+        run: docker run --entrypoint /bin/sh cwfm_server
       - name: Running phpunit
         run: ./vendor/bin/phpunit --verbose ./vendor/bin/tests
       - name: Exit CWFM_server Terminal
