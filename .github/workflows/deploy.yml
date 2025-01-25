@@ -21,6 +21,8 @@ jobs:
       #  run: ./vendor/bin/phpunit --verbose ./vendor/bin/tests
       #- name: Exit CWFM_server Terminal
       #  run: exit
+      - name: Docker build
+        run: docker build ./webcontent/ -t goalldex/cwfm:latest
       - name: Docker login
         run: docker login -u goalldex -p ${{ secrets.DOCKER_TOKEN }}
       - name: To Docker Hub
