@@ -14,7 +14,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Run profile
-        run: docker-compose --profile prod up -d
+        run: docker compose --profile prod up -d
       - name: Running phpunit
         run: ./vendor/bin/phpunit --verbose tests
       - name: Docker login
