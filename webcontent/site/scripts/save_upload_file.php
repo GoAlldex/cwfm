@@ -3,7 +3,11 @@
 Speichern einer hochgeladenen Datei auf dem Server
 ***********************************************************/
 if(isset($_POST['save'])) {
-	include("./db.php");
+	if(!isset($_POST["test"])) {
+	    include("./db.php");
+    } else {
+        include("../../../var/www/html/scripts/db.php");
+    }
 	$error = false;
 	$msg = array();
     $file_path = "../upload/";
@@ -59,14 +63,16 @@ if(isset($_POST['save'])) {
     - Prüfen ob dieser Dateiname schon existiert
     - Wenn Dateiname schon vorhanden rufe dich selbst nochmal auf
     ***********************************************************/
-    function random_file($end, $file_path) {
-        $rnd = bin2hex(random_bytes(15));
-        if(!is_file($file_path.$rnd.".".$end)) {
-            return $rnd.".".$end;
-        } else {
-            return random_file($end);
-        }
-    };
+    if(!function_exists("random_file")) {
+        function random_file($end, $file_path) {
+            $rnd = bin2hex(random_bytes(15));
+            if(!is_file($file_path.$rnd.".".$end)) {
+                return $rnd.".".$end;
+            } else {
+                return random_file($end);
+            }
+        };
+    }
 
     /***********************************************************
     Wenn keine Übermittlungsfehler existieren:
@@ -130,8 +136,16 @@ if(isset($_POST['save'])) {
     Rückgabe der Daten an JavaScript
     ***********************************************************/
     if(!$error) {
-		echo JSON_ENCODE($data);
+        if(!isset($_POST["test"])) {
+		    echo JSON_ENCODE($data);
+        } else {
+            $data = JSON_ENCODE($data);
+        }
 	} else {
-		echo JSON_ENCODE($msg);
+        if(!isset($_POST["test"])) {
+		    echo JSON_ENCODE($msg);
+        } else {
+            $data = JSON_ENCODE($msg);
+        }
 	}
 } ?>

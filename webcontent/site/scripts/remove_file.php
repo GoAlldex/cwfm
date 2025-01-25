@@ -3,7 +3,11 @@
 Entfernen einer Datei
 ***********************************************************/
 if(isset($_POST['remove'])) {
-	include("./db.php");
+	if(!isset($_POST["test"])) {
+	    include("./db.php");
+    } else {
+        include("../../../var/www/html/scripts/db.php");
+    }
     $data = array();
 	$error = false;
 	$msg = array();
@@ -64,8 +68,16 @@ if(isset($_POST['remove'])) {
     Rückgabe der Daten an JavaScript
     ***********************************************************/
     if(!$error) {
-		echo JSON_ENCODE("TRUE");
+        if(!isset($_POST["test"])) {
+		    echo JSON_ENCODE("TRUE");
+        } else {
+            $data = JSON_ENCODE("TRUE");
+        }
 	} else {
-		echo JSON_ENCODE($msg);
+        if(!isset($_POST["test"])) {
+		    echo JSON_ENCODE($msg);
+        } else {
+            $data = JSON_ENCODE($msg);
+        }
 	}
 } ?>

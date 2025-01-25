@@ -1,25 +1,20 @@
 name: cwfm
 
 on:
-  push:
-    branches:
-      - main
+  [workflow_dispatch]
 
 jobs:
   main-test:
-    name: Run PHPUnit webcontent/tests/
-    runs-on: ubuntu-latest
-    container:
-      image: composer:latest
-      volumes:
-        - ${{ github.workspace }}:/test
-    
+    name: Ubuntu
+    runs-on: ubuntu-latest    
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
-      - name: Running composer install
-        run: composer install
+        uses: actions/checkout@v4
       - name: Run profile
         run: docker-compose --profile prod up -d
       - name: Running phpunit
-        run: ./vendor/bin/phpunit tests
+        run: ./vendor/bin/phpunit --verbose tests
+      - name: Docker login
+        run: docker login -u goalldex -p ${{ secrets.DOCKER_TOKEN }}
+      - name: To Docker Hub
+        run: docker push goalldex/cwfm:latest

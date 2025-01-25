@@ -3,7 +3,11 @@
 Speichern eines neuen Hauptverzeichnisses
 ***********************************************************/
 if(isset($_POST['save'])) {
-	include("./db.php");
+	if(!isset($_POST["test"])) {
+	    include("./db.php");
+    } else {
+        include("../../../var/www/html/scripts/db.php");
+    }
 	$error = false;
 	$msg = array();
 
@@ -37,8 +41,16 @@ if(isset($_POST['save'])) {
     Rückgabe der Daten an JavaScript
     ***********************************************************/
     if(!$error) {
-		echo JSON_ENCODE("TRUE");
+        if(!isset($_POST["test"])) {
+		    echo JSON_ENCODE("TRUE");
+        } else {
+            $data = JSON_ENCODE("TRUE");
+        }
 	} else {
-		echo JSON_ENCODE($msg);
+        if(!isset($_POST["test"])) {
+		    echo JSON_ENCODE($msg);
+        } else {
+            $data = JSON_ENCODE($msg);
+        }
 	}
 } ?>

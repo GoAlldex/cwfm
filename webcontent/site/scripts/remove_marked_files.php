@@ -3,7 +3,11 @@
 Entfernen mehrerer Dateien
 ***********************************************************/
 if(isset($_POST['remove'])) {
-	include("./db.php");
+	if(!isset($_POST["test"])) {
+	    include("./db.php");
+    } else {
+        include("../../../var/www/html/scripts/db.php");
+    }
 	$error = false;
 	$msg = array();
 
@@ -11,28 +15,35 @@ if(isset($_POST['remove'])) {
     Übermittelte Parameter von JavaScript
     ***********************************************************/
     $ids = JSON_DECODE($_POST["ids"], true);
+    echo $ids;
 
     /***********************************************************
     JavaScript Parameter Prüfen
     ***********************************************************/
-    if(count($ids) == 0) {
+    if($ids === false) {
         $error = true;
         $msg["ERROR"][] = "Ungültige Dateien (1)";
+    } else if(!is_array($ids)) {
+        $error = true;
+        $msg["ERROR"][] = "Ungültige Dateien (2)";
+    } else if(count($ids) == 0) {
+        $error = true;
+        $msg["ERROR"][] = "Ungültige Dateien (3)";
     } else {
         $files = array();
         foreach($ids as $index => $id) {
             if(!is_numeric($id)) {
                 $error = true;
-                $msg["ERROR"][] = "Ungültige Dateien (2)";
+                $msg["ERROR"][] = "Ungültige Dateien (4)";
             } else if(intval($id) == 0) {
                 $error = true;
-                $msg["ERROR"][] = "Ungültige Dateien (3)";
+                $msg["ERROR"][] = "Ungültige Dateien (5)";
             } else {
                 $sql = "SELECT id, file_name_saved, file_path FROM files WHERE id = ".$id;
                 $result = $pdo->query($sql)->fetch();
                 if(!$result) {
                     $error = true;
-                    $msg["ERROR"][] = "Ungültige Datei (4)";
+                    $msg["ERROR"][] = "Ungültige Datei (6)";
                 } else {
                     $files[] = $result["file_path"].$result["file_name_saved"];
                 }
@@ -72,8 +83,16 @@ if(isset($_POST['remove'])) {
     Rückgabe der Daten an JavaScript
     ***********************************************************/
     if(!$error) {
-		echo JSON_ENCODE($ids);
+        if(!isset($_POST["test"])) {
+		    echo JSON_ENCODE($ids);
+        } else {
+            $data = JSON_ENCODE($ids);
+        }
 	} else {
-		echo JSON_ENCODE($msg);
+        if(!isset($_POST["test"])) {
+		    echo JSON_ENCODE($msg);
+        } else {
+            $data = JSON_ENCODE($msg);
+        }
 	}
 } ?>

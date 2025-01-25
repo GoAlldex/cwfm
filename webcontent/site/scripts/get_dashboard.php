@@ -3,7 +3,11 @@
 Dashboard CWFM Eigenschaften
 ***********************************************************/
 if(isset($_POST['get'])) {
-	include("./db.php");
+	if(!isset($_POST["test"])) {
+	    include("./db.php");
+    } else {
+        include("../../../var/www/html/scripts/db.php");
+    }
     $data = array();
 	$error = false;
 	$msg = array();
@@ -113,8 +117,16 @@ if(isset($_POST['get'])) {
     Rückgabe der Daten an JavaScript
     ***********************************************************/
     if(!$error) {
-		echo JSON_ENCODE($data);
+        if(!isset($_POST["test"])) {
+		    echo JSON_ENCODE($data);
+        } else {
+            $data = JSON_ENCODE($data);
+        }
 	} else {
-		echo JSON_ENCODE($msg);
+        if(!isset($_POST["test"])) {
+		    echo JSON_ENCODE($msg);
+        } else {
+            $data = JSON_ENCODE($msg);
+        }
 	}
 } ?>
