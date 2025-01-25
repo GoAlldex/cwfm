@@ -1,9 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="de">
     <head>
-        <title></title>
+        <meta charset="utf-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+		<meta name="robots" content="noindex, nofollow">
+		<meta name="description" content="">
+		<meta name="author" content="Alexey Khokhlov">
+		<link rel="icon" size="32x32" href="./images/favicon_2.ico">
+		<title>CWFM</title>
+		<link rel="Stylesheet" href="./css/master_style.css">
     </head>
-    <body>
-        
+    <body onload="get_master_folders(0);dashboard();">
+        <div class="msg-box" id="msg-box"></div>
+        <div class="view-box" id="view-box"></div>
+        <div class="drag-drop" id="drag-drop">
+            <img class="upload-img" src="./images/add_1.png">
+        </div>
+        <div class="file-move" id="file-move">
+            <img class="file-move-img" src="./images/file_1.png" alt="Datei">
+            <div class="file-move-wrapper">
+                <div class="file-move-text">+0</div>
+            </div>
+        </div>
+		<div id="wrapper">
+            <header>
+                <div class="header-footer-box justify-start align-items-center">
+                    <img class="dashboard-button" src="./images/split_1.png" alt="Dahsboard" title="Dashboard anzeigen" onclick="dashboard()">
+                </div>
+                <div class="header-footer-box justify-center align-items-center"></div>
+                <div class="header-footer-box justify-end align-items-center font-200 color-2 bold">CWFM</div>
+            </header>
+            <main>
+                <div class="menue">
+                    <div class="menue-title-box">
+                        <div class="menue-title-underline">
+                            <div class="color-2 bold font-150">Hauptverzeichnisse</div>
+                            <img class="menue-button" src="./images/add_1.png" alt="Neuer Ordner" title="Neuen Ordner erstellen" onclick="new_master_folder()">
+                        </div>
+                    </div>
+                    <div class="menue-content-box overflow-y" id="menue-content"></div>
+                </div>
+                <div class="main-content">
+                    <div class="upload-process" id="upload-process"></div>
+                    <div class="content" id="content">
+
+                    </div>
+                </div>
+            </main>
+            <footer>
+                <div class="header-footer-box justify-start align-items-center"></div>
+                <div class="header-footer-box justify-center align-items-center"></div>
+                <div class="header-footer-box justify-end align-items-center"></div>
+            </footer>
+        </div>
+        <script src="./js/jquery-3.5.1.min.js"></script>
+        <script src="./js/control.js"></script>
     </body>
 </html>

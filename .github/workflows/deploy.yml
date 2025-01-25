@@ -1,0 +1,29 @@
+name: cwfm
+
+on:
+  push:
+    branches:
+      - main
+      - develope
+
+jobs:
+  main-test:
+    name: Ubuntu
+    runs-on: ubuntu-latest    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run profile
+        run: docker compose --profile prod up -d
+      #- name: CWFM_server Terminal
+      #  run: docker run --entrypoint /bin/sh cwfm_server
+      #- name: Running phpunit
+      #  run: ./vendor/bin/phpunit --verbose ./vendor/bin/tests
+      #- name: Exit CWFM_server Terminal
+      #  run: exit
+      - name: Docker build
+        run: docker build ./webcontent/ -t goalldex/cwfm:latest
+      - name: Docker login
+        run: docker login -u goalldex -p ${{ secrets.DOCKER_TOKEN }}
+      - name: To Docker Hub
+        run: docker push goalldex/cwfm:latest
