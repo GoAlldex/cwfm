@@ -15,7 +15,6 @@ if(isset($_POST['remove'])) {
     Übermittelte Parameter von JavaScript
     ***********************************************************/
     $ids = JSON_DECODE($_POST["ids"], true);
-    echo $ids;
 
     /***********************************************************
     JavaScript Parameter Prüfen
